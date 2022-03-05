@@ -29,10 +29,10 @@ public class App
         	}catch(Exception e){System.out.println(e);}  
       }
     
-    protected static String getType(String line) {
+    protected static JSONObject getType(String line) {
     	JSONObject jsnObj = new JSONObject(line);
-        String type = jsnObj.getString("type");
-        return type;
+        //String type = jsnObj.getString("type");
+        return jsnObj;
     }
     
 }
