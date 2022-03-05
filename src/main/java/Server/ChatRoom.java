@@ -2,7 +2,9 @@ package Server;
 
 public class ChatRoom {
 	
-	private String roomName;
+	private String roomName; //unique name
 	private String owner;
+	
+	
 
 }
