@@ -22,7 +22,7 @@ public class ClientHandler {
 			String res;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity").toString();
-				//TODO
+				//TODO-List
 				//Message this response 
 			} else {
 				res = new JSONObject().put("approved", "false").put("type", "newidentity").toString();
