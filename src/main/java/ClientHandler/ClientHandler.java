@@ -1,19 +1,34 @@
 package ClientHandler;
-
+import org.json.JSONObject;
+import org.json.JSONException;
 
 //Handling types 
 
 
 public class ClientHandler {
 	String type;
-	public ClientHandler(String type) {
-		this.type = type;
+	JSONObject jsnObj;
+	public ClientHandler(JSONObject jsnObj) {
+		this.type = jsnObj.getString("type");
+		this.jsnObj = jsnObj;
+		
 	}
 	
 	public void getTypeFunctionality() {
 		switch (type) {
 		case "newidentity":
-			System.out.println("new identity");
+			NewIdentity newIdentity = new NewIdentity(jsnObj.getString("identity"));
+			boolean isApproved = newIdentity.validation();
+			String res;
+			if (isApproved) {
+				res = new JSONObject().put("approved", "true").put("type", "newidentity").toString();
+				//TODO
+				//Message this response 
+			} else {
+				res = new JSONObject().put("approved", "false").put("type", "newidentity").toString();
+			}
+			
+			System.out.println("new identity :: "+ res );
 			break;
 		case "message":
 			System.out.println("message");
