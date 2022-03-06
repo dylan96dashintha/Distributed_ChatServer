@@ -1,12 +1,25 @@
 package Server;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.message.Message;
+import org.json.JSONObject;
+
 import ClientHandler.User;
+import Connection.Server2ServerConnection;
+import Messaging.Sender;
 
 public class ServerState {
 	
 	/* Maintaining current running server state*/
+	
+	private static final Logger logger = LogManager.getLogger(ServerState.class);
 	
 	private String serverName, serverAddress;
 	
@@ -91,6 +104,43 @@ public class ServerState {
 
 	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
 		this.identityList = identityList;
+	}
+	
+	public Server getServerByName(String serverName) {
+		return this.serversHashmap.get(serverName);
+	}
+	
+	public void replaceServerbByName(Server server) {
+		this.serversHashmap.put(server.getServerName(), server);
+	}
+	
+	public void createServer2ServerConnection() {
+		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {
+			if (!(entry.getKey().equals(this.serverName))) {
+				try {
+					Socket socket = new Socket(entry.getValue().getServerAddress(), entry.getValue().getServerPort());
+					logger.info("Server "+ this.serverName + " is connected to Server "+entry.getValue().getServerName()
+							+ " using address " +entry.getValue().getServerAddress() 
+							+ " port " + entry.getValue().getServerPort());
+					JSONObject obj = new JSONObject();
+					obj.put("type","server-connection").put("connected", "true").put("server", this.serverName);
+					Sender.sendRespond(socket, obj);
+					Server s = entry.getValue();
+					s.setServerSocketConnection(socket);
+					replaceServerbByName(s);
+				}catch (UnknownHostException u)
+		        {
+		            System.out.println(u);
+		            logger.error(u.getMessage());
+		        }
+		        catch(IOException i)
+		        {
+		            System.out.println(i);
+		            logger.error(i.getMessage());
+		        }
+				
+			}
+		}
 	}
 	
 	
