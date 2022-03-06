@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import ClientHandler.ClientHandler;
 import Connection.ClientServerConnection;
+import Server.ServerState;
 
 
 public class App 
@@ -20,21 +21,37 @@ public class App
     {
     	
     	logger.info("Stating Server");
-
-    	try {
-    		ServerSocket ss = new ServerSocket(4444);
-    		while (true) {
-    			System.out.println("Run wenawada");
-        		Socket s=ss.accept();
-        		InputStream inputFromClient = s.getInputStream();
-        		System.out.println("Run wenawasasasaaaaaaaaaaaaa");
-        		ClientServerConnection clientServerConnection = new ClientServerConnection(inputFromClient);
-        		clientServerConnection.start();
-        	}
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+    	String confFilePath = "conf.txt"; 
+    	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
     	
+    	//Create client connection
+    	ServerSocket serverSocket = null;
+    	Socket socket = null;
+    	try {
+    		serverSocket = new ServerSocket();
+    		SocketAddress socketAddress = new InetSocketAddress(currentServer.getServerAddress(), currentServer.getClientPort());    		
+    		serverSocket.bind(socketAddress);
+    		logger.debug("Socket Address: "+ currentServer.getServerAddress()+ ", Port: "+ currentServer.getClientPort());
+    	}catch (IOException e) {
+    		logger.error(e.getMessage());		
+    		}
+    	
+    	boolean isListening = true;
+    	while (true) {
+	       try {
+               socket = serverSocket.accept();
+               InputStream inputFromClient = socket.getInputStream();
+               ClientServerConnection clientServerConnection = new ClientServerConnection(inputFromClient);
+       			clientServerConnection.start();
+           } catch (IOException e) {
+        	   isListening = false;
+        	   logger.error(e.getMessage());
+        	   logger.error("Server Stop Listening");
+        	   
+           }
+    	}
+
+
     	}
 //        try{  
 //        	ServerSocket ss=new ServerSocket(4444);  
