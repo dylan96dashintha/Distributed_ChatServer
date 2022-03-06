@@ -2,6 +2,7 @@ package Server;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import ClientHandler.User;
 
 public class ServerState {
 	
@@ -17,7 +18,7 @@ public class ServerState {
 	
 	private ConcurrentHashMap<String, Server> serversHashmap = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashmap = new ConcurrentHashMap<>();
-	private  ConcurrentLinkedQueue<String> identityList = new ConcurrentLinkedQueue<>();
+	private  ConcurrentLinkedQueue<User> identityList = new ConcurrentLinkedQueue<>();
 	
 	private ServerState() {}
 	
@@ -83,5 +84,15 @@ public class ServerState {
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
 	}
+
+	public ConcurrentLinkedQueue<User> getIdentityList() {
+		return identityList;
+	}
+
+	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
+		this.identityList = identityList;
+	}
+	
+	
 
 }

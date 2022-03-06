@@ -1,11 +1,14 @@
 package ClientHandler;
 import org.json.JSONObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 
 //Handling types 
 
 
 public class ClientHandler {
+	private static final Logger logger = LogManager.getLogger(ClientHandler.class);
 	String type;
 	JSONObject jsnObj;
 	public ClientHandler(JSONObject jsnObj) {
@@ -22,14 +25,14 @@ public class ClientHandler {
 			String res;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity").toString();
-				//TODO-List
-				//Message this response 
 			} else {
 				res = new JSONObject().put("approved", "false").put("type", "newidentity").toString();
 			}
-			
-			System.out.println("new identity :: "+ res );
+			//TODO-List
+			//Message this response 
+			logger.debug("New Identity: "+ res);
 			break;
+			
 		case "message":
 			System.out.println("message");
 			break;

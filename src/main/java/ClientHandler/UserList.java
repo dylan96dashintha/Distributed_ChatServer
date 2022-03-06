@@ -1,9 +1,13 @@
 package ClientHandler;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import Server.ServerState;
 
 public class UserList {
-	ArrayList<User> userArrayList = new ArrayList();
+	//public ArrayList<User> userArrayList = new ArrayList();
+	public ConcurrentLinkedQueue<User> identityList = ServerState.getServerState().getIdentityList();
 	
 	public boolean addUser(String name) {
 		if (isUnique(name)) {
@@ -14,7 +18,7 @@ public class UserList {
 			
 			//TODO
 			//Add user to other servers users list
-			userArrayList.add(user);
+			identityList.add(user);
 			return true;
 		} else {
 			return false;
@@ -24,7 +28,7 @@ public class UserList {
 	
 	public boolean isUnique(String name) {
 		boolean isUni = true;
-		for (User u : userArrayList) {
+		for (User u : identityList) {
 			if (u.getName().equals(name)) {
 				isUni = false;
 			}
