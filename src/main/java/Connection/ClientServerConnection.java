@@ -13,9 +13,17 @@ import ClientHandler.ClientHandler;
 public class ClientServerConnection extends Thread {
 	InputStream inputFromClient;
 	Scanner scanner;
-	public ClientServerConnection(InputStream inputFromClient) {
-		this.inputFromClient = inputFromClient;
-	    scanner = new Scanner(inputFromClient, String.valueOf(StandardCharsets.UTF_8));
+	Socket socket;
+	public ClientServerConnection(Socket socket) {
+		try {
+			this.socket = socket;
+			InputStream inputFromClient = this.socket.getInputStream();
+			this.inputFromClient = inputFromClient;
+		    scanner = new Scanner(inputFromClient, String.valueOf(StandardCharsets.UTF_8));
+		}catch(Exception e) {
+			//TODO handle errors
+		}
+		
 	}
 	
 	@Override

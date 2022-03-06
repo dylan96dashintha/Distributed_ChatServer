@@ -1,4 +1,5 @@
 
+
 import java.io.*;  
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import ClientHandler.ClientHandler;
 import Connection.ClientServerConnection;
+import Messaging.Sender;
 import Server.ServerState;
 
 
@@ -40,9 +42,12 @@ public class App
     	while (true) {
 	       try {
                socket = serverSocket.accept();
-               InputStream inputFromClient = socket.getInputStream();
-               ClientServerConnection clientServerConnection = new ClientServerConnection(inputFromClient);
+               ClientServerConnection clientServerConnection = new ClientServerConnection(socket);
        			clientServerConnection.start();
+//       			JSONObject json = new JSONObject();
+//       			json.put("type", "newidentity");
+//       			json.put("approved", "true");
+//       			Sender.sendRespond(socket, json);
            } catch (IOException e) {
         	   isListening = false;
         	   logger.error(e.getMessage());
