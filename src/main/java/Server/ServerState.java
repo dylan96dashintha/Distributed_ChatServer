@@ -71,6 +71,8 @@ public class ServerState {
 	    ChatRoom chatRoom = new ChatRoom(mainHall);
 	    chatRoomHashmap.put("MainHall", chatRoom);
 		
+	    createServer2ServerConnection();
+	    
 		return serverState;
 	}
 	
@@ -146,12 +148,10 @@ public class ServerState {
 					replaceServerbByName(s);
 				}catch (UnknownHostException u)
 		        {
-		            System.out.println(u);
 		            logger.error(u.getMessage());
 		        }
 		        catch(IOException i)
 		        {
-		            System.out.println(i);
 		            logger.error(i.getMessage());
 		        }
 				

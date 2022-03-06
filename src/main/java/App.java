@@ -69,7 +69,7 @@ public class App
     		serverSocket = new ServerSocket();
     		SocketAddress socketAddress = new InetSocketAddress(currentServer.getServerAddress(), currentServer.getClientPort());    		
     		serverSocket.bind(socketAddress);
-    		logger.debug("Socket Address: "+ currentServer.getServerAddress()+ ", Port: "+ currentServer.getClientPort());
+    		logger.debug("Server "+ currentServer.getServerName() +" Listening for Clients, Address: "+ currentServer.getServerAddress()+ ", Port: "+ currentServer.getClientPort());
     	}catch (IOException e) {
     		logger.error(e.getMessage());		
     		}
