@@ -42,18 +42,19 @@ public class ClientHandler {
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
 				
-				//Broadcast res to MainHall
 				roomChangeRes = new JSONObject().put("roomid" , mainHall).put("former" , "").put("identity", newIdentity).put("type", "roomchange");
 				
 			} else {
 				res = new JSONObject().put("approved", "false").put("type", "newidentity");
 			}
-			//TODO-List
-			//Message this response 
+			
 			logger.debug("New Identity: "+ res);
 			try {
 				Sender.sendRespond(socket, res);
-
+				if (isApproved) {
+					//TODO- Messaging
+					//Broadcast roomChangeRes to all the users in MainHall including the connecting clientS
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
