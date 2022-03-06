@@ -33,7 +33,7 @@ public class ClientServerConnection extends Thread {
 	    while (true) {
 	        String line = scanner.nextLine();
 	        System.out.println("Line == "+line);
-	        ClientHandler clientHandler = new ClientHandler(getType(line));
+	        ClientHandler clientHandler = new ClientHandler(getType(line), socket);
 	        clientHandler.getTypeFunctionality();
 	        
 	    }
