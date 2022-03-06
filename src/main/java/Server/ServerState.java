@@ -16,6 +16,8 @@ public class ServerState {
 	
 	private static ServerState serverState;
 	
+
+	
 	private ConcurrentHashMap<String, Server> serversHashmap = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashmap = new ConcurrentHashMap<>();
 	private  ConcurrentLinkedQueue<User> identityList = new ConcurrentLinkedQueue<>();
@@ -37,6 +39,7 @@ public class ServerState {
 	
 	//initialize server
 	
+
 	public ServerState initializeServer(String serverName, String confFilePath) {
 		//TODO
 		//Have to initialize server using configure file
@@ -50,9 +53,22 @@ public class ServerState {
 		serversHashmap.put("s3", new Server("s3", "localhost", 4446, 5557));
 		//hard coded end
 		
+		//create a mainhall room
+		String mainHall = "MainHall-"+this.serverName;
+	    ChatRoom chatRoom = new ChatRoom(mainHall);
+	    chatRoomHashmap.put("mainHall", chatRoom);
+		
 		return serverState;
 	}
 	
+	public ConcurrentHashMap<String, ChatRoom> getChatRoomHashmap() {
+		return chatRoomHashmap;
+	}
+
+	public void setChatRoomHashmap(ConcurrentHashMap<String, ChatRoom> chatRoomHashmap) {
+		this.chatRoomHashmap = chatRoomHashmap;
+	}
+
 	public String getServerName() {
 		return serverName;
 	}
