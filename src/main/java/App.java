@@ -5,14 +5,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner; 
 import org.json.JSONObject;
 import org.json.JSONException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import ClientHandler.ClientHandler;
 import Connection.ClientServerConnection;
 
 
 public class App 
 {
+	private static final Logger logger = LogManager.getLogger(App.class);
+	
     public static void main( String[] args )
     {
+    	
+    	logger.info("Stating Server");
 
     	try {
     		ServerSocket ss = new ServerSocket(4444);
