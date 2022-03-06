@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import ClientHandler.ClientHandler;
 import Connection.ClientServerConnection;
+import Connection.Server2ServerConnection;
 import Messaging.Sender;
 import Server.ServerState;
 
@@ -25,6 +26,41 @@ public class App
     	logger.info("Stating Server");
     	String confFilePath = "conf.txt"; 
     	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
+    	
+    	//create server connection    	
+    	Thread server2serverListingThread = new Thread() {
+    		public void run() {
+    			ServerSocket serverSocket = null;
+    			Socket socket = null;
+    			try {
+    				serverSocket = new ServerSocket();
+    				SocketAddress socketAddress = new InetSocketAddress(ServerState.getServerState().getServerAddress(),
+    						ServerState.getServerState().getServerPort());
+    				serverSocket.bind(socketAddress);
+    				logger.debug("Server " + ServerState.getServerState().getServerName()
+    						+ " Listening for other servers, Address: " + ServerState.getServerState().getServerAddress()
+    						+ ", Port: " + ServerState.getServerState().getServerPort());
+
+    			} catch (IOException e) {
+    				logger.error(e.getMessage());
+    			}
+    			
+    			while (true) {
+    				try {
+    					socket = serverSocket.accept();
+    					Server2ServerConnection servr2ServerConnection = new Server2ServerConnection(socket);
+    					servr2ServerConnection.start();
+    				} catch (IOException e) {
+
+    					logger.error(e.getMessage());
+    					logger.error("Server Stop Listening");
+
+    				}
+    			}
+    		}
+    	};
+    	
+    	server2serverListingThread.start();
     	
     	//Create client connection
     	ServerSocket serverSocket = null;

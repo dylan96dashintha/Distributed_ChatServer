@@ -1,5 +1,6 @@
 package Server;
 
+import java.net.Socket;
 import java.util.ArrayList;
 
 //functionalities of server
@@ -10,6 +11,8 @@ public class Server {
 	private String serverName;
 	private String serverAddress;
 	private int serverPort, clientPort;
+	
+	private Socket serverSocketConnection;
 	
 
 	public Server(String serverName, String serverAddress, int serverPort, int clientPort) {
@@ -41,6 +44,12 @@ public class Server {
 	}
 	public void setClientPort(int clientPort) {
 		this.clientPort = clientPort;
+	}
+	public Socket getServerSocketConnection() {
+		return serverSocketConnection;
+	}
+	public void setServerSocketConnection(Socket serverSocket) {
+		this.serverSocketConnection = serverSocket;
 	}
 
 }
