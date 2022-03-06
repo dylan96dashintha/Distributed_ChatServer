@@ -2,12 +2,17 @@ package Server;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import ClientHandler.ClientHandler;
 import ClientHandler.User;
 
 public class ServerState {
 	
 	/* Maintaining current running server state*/
-	
+	private static final Logger logger = LogManager.getLogger(ServerState.class);
 	private String serverName, serverAddress;
 	
 	private int clientPort, serverPort;
@@ -56,7 +61,7 @@ public class ServerState {
 		//create a mainhall room
 		String mainHall = "MainHall-"+this.serverName;
 	    ChatRoom chatRoom = new ChatRoom(mainHall);
-	    chatRoomHashmap.put("mainHall", chatRoom);
+	    chatRoomHashmap.put("MainHall", chatRoom);
 		
 		return serverState;
 	}
