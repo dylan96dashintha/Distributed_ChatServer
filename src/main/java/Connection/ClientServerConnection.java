@@ -14,12 +14,15 @@ public class ClientServerConnection extends Thread {
 	InputStream inputFromClient;
 	Scanner scanner;
 	Socket socket;
+	private ClientHandler clientHandler;
 	public ClientServerConnection(Socket socket) {
 		try {
 			this.socket = socket;
+			clientHandler = new ClientHandler(socket);
 			InputStream inputFromClient = this.socket.getInputStream();
 			this.inputFromClient = inputFromClient;
 		    scanner = new Scanner(inputFromClient, String.valueOf(StandardCharsets.UTF_8));
+		    
 		}catch(Exception e) {
 			//TODO handle errors
 		}
@@ -33,8 +36,7 @@ public class ClientServerConnection extends Thread {
 	    while (true) {
 	        String line = scanner.nextLine();
 	        System.out.println("Line == "+line);
-	        ClientHandler clientHandler = new ClientHandler(getType(line), socket);
-	        clientHandler.getTypeFunctionality();
+	        clientHandler.getTypeFunctionality(getType(line));
 	        
 	    }
 	   // ss.close();  

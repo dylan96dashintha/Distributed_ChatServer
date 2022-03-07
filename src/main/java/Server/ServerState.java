@@ -68,7 +68,8 @@ public class ServerState {
 		
 		//create a mainhall room
 		String mainHall = "MainHall-"+this.serverName;
-	    ChatRoom chatRoom = new ChatRoom(mainHall);
+		ChatRoom chatRoom = new ChatRoom();
+	    chatRoom.createChatRoom(mainHall, "");
 	    chatRoomHashmap.put("MainHall", chatRoom);
 		
 	    createServer2ServerConnection();

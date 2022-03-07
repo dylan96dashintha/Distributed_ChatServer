@@ -25,9 +25,10 @@ public class ClientHandler {
 	Socket socket;
 	protected String mainHall;
 	protected ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
-	public ClientHandler(JSONObject jsnObj, Socket socket) {
-		this.type = jsnObj.getString("type");
-		this.jsnObj = jsnObj;
+	protected NewIdentity newIdentity;
+	String identityName;
+	public ClientHandler(Socket socket) {
+		
 		this.socket = socket;
 		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom = chatRoomHashMap.get("MainHall"); 
@@ -35,15 +36,19 @@ public class ClientHandler {
 		
 	}
 	
-	public void getTypeFunctionality() {
+	public void getTypeFunctionality(JSONObject jsnObj) {
+		this.type = jsnObj.getString("type");
+		this.jsnObj = jsnObj;
 		switch (type) {
 		case "newidentity":
-			NewIdentity newIdentity = new NewIdentity(jsnObj.getString("identity"));
+			identityName = jsnObj.getString("identity");
+			newIdentity = new NewIdentity(identityName, socket);
 			boolean isApproved = newIdentity.validation();
 			JSONObject res;
 			JSONObject roomChangeResNewIdentity;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
+				logger.debug("new identity22  ::  "+newIdentity.getName());
 				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
 				
 			} else {
@@ -88,6 +93,32 @@ public class ClientHandler {
 			System.out.println("who");
 			break;
 		case "createroom":
+			String roomId = jsnObj.getString("roomid");
+			JSONObject createRoomRes;
+			JSONObject createRoomRoomChangeRes;
+			if (!roomId.equals("MainHall")) {
+				ChatRoom chatRoom = new ChatRoom();
+				logger.debug("new identity  ::  "+identityName);
+				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
+				if (isRoomApproved) {
+					chatRoomHashMap.put(roomId, chatRoom);
+					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
+					try {
+						logger.debug("createroom :: createRoomRes :: "+ createRoomRes);
+						Sender.sendRespond(socket, createRoomRes);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//TODO
+					//Broadcast roomchange message to teh clients that are members of the chat room
+					//Check former_room name
+					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
+				} else {
+					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
+				}
+				
+			}
 			
 			break;
 		case "joinroom":
