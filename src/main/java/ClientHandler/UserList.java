@@ -1,5 +1,6 @@
 package ClientHandler;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -9,12 +10,12 @@ public class UserList {
 	//public ArrayList<User> userArrayList = new ArrayList();
 	public ConcurrentLinkedQueue<User> identityList = ServerState.getServerState().getIdentityList();
 	
-	public boolean addUser(String name) {
+	public boolean addUser(String name, Socket socket) {
 		if (isUnique(name)) {
 			//TODO
 			//check with other servers
 			
-			User user = new User(name);
+			User user = new User(name, socket);
 			
 			//TODO
 			//Add user to other servers users list
