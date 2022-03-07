@@ -7,6 +7,8 @@ import Server.ServerState;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,11 +24,12 @@ public class ClientHandler {
 	JSONObject jsnObj;
 	Socket socket;
 	protected String mainHall;
+	protected ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
 	public ClientHandler(JSONObject jsnObj, Socket socket) {
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		this.socket = socket;
-		ConcurrentHashMap<String, ChatRoom> chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom = chatRoomHashMap.get("MainHall"); 
 		mainHall = chatRoom.getRoomName();
 		
@@ -38,11 +41,10 @@ public class ClientHandler {
 			NewIdentity newIdentity = new NewIdentity(jsnObj.getString("identity"));
 			boolean isApproved = newIdentity.validation();
 			JSONObject res;
-			JSONObject roomChangeRes;
+			JSONObject roomChangeResNewIdentity;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
-				
-				roomChangeRes = new JSONObject().put("roomid" , mainHall).put("former" , "").put("identity", newIdentity).put("type", "roomchange");
+				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
 				
 			} else {
 				res = new JSONObject().put("approved", "false").put("type", "newidentity");
@@ -53,7 +55,7 @@ public class ClientHandler {
 				Sender.sendRespond(socket, res);
 				if (isApproved) {
 					//TODO- Messaging
-					//Broadcast roomChangeRes to all the users in MainHall including the connecting clientS
+					//Broadcast roomChangeResNewIdentity to all the users in MainHall including the connecting clientS
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -65,13 +67,28 @@ public class ClientHandler {
 			System.out.println("message");
 			break;
 		case "list":
-			System.out.println("list");
+			JSONObject resList;
+			List roomList = new ArrayList<String>();
+			//TODO
+			//Global chat rooms to be applied here
+			for (ChatRoom chatRoom: chatRoomHashMap.values()) {
+				roomList.add(chatRoom.getRoomName());
+			}
+			resList = new JSONObject().put("type", "roomlist").put("rooms", roomList);
+			logger.debug("Room List: "+ resList);
+			try {
+				Sender.sendRespond(socket, resList);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			break;
 		case "who":
 			System.out.println("who");
 			break;
 		case "createroom":
-			System.out.println("createroom");
+			
 			break;
 		case "joinroom":
 			System.out.println("joinroom");
@@ -83,5 +100,12 @@ public class ClientHandler {
 			System.out.println("quit");
 			break;
 		}
-	} 
+	}
+	
+	
+	public JSONObject changeRoom(String identity, String formerRoom, String newRoom) {
+		JSONObject roomChangeRes;
+		roomChangeRes = new JSONObject().put("roomid" , newRoom).put("former" , formerRoom).put("identity", identity).put("type", "roomchange");
+		return roomChangeRes;
+	}
 }

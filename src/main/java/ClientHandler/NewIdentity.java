@@ -6,6 +6,10 @@ public class NewIdentity {
 		this.name = name;
 	}
 	
+	public String getName () {
+		return name;
+	}
+	
 	
 	
 	public boolean validation() {
