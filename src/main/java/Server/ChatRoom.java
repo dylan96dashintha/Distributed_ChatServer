@@ -18,6 +18,10 @@ public class ChatRoom {
 	private ConcurrentLinkedQueue<User> userListInRoom;
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
 	
+	public ConcurrentLinkedQueue<User> getUserListInRoom() {
+		return userListInRoom;
+	}
+
 	public ChatRoom() {
 		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		this.userListInRoom = new ConcurrentLinkedQueue<User>();
@@ -77,6 +81,14 @@ public class ChatRoom {
 	
 	public void joinRoom(User user) {
 		userListInRoom.add(user);
+	}
+	
+	public ConcurrentLinkedQueue<User> deleteRoom(String chatRoom) {
+		ChatRoom chatRoomBeforeDelete = chatRoomHashMap.get(chatRoom);
+		ConcurrentLinkedQueue<User> userListDeletedRoom = chatRoomBeforeDelete.getUserListInRoom();
+		chatRoomHashMap.remove(chatRoom);
+		return userListDeletedRoom;
+		
 	}
 	
 
