@@ -11,8 +11,13 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import ClientHandler.ClientHandler;
+import Gossiping.GossipingHandler;
+import Server.Server;
+import Server.ServerHandler;
 import Server.ServerState;
 
 public class Server2ServerConnection extends Thread{
@@ -22,8 +27,10 @@ public class Server2ServerConnection extends Thread{
 	private Socket socket;
 	private InputStream inputFromClient;
 	private Scanner scanner;
+	private ServerHandler serverHandeler;
 	
 	public Server2ServerConnection(Socket socket) {
+		this.serverHandeler = new ServerHandler();
 		try {
 			this.socket = socket;
 			this.inputFromClient = this.socket.getInputStream();
@@ -39,13 +46,52 @@ public class Server2ServerConnection extends Thread{
 		try {
 
 			while (true) {
-				String line = this.scanner.nextLine();
-				logger.info(line);
+				String line = this.scanner.nextLine();				
+				handleResponse(line);
+				
 			}
 
 		} catch (Exception e) {
 			System.out.println(e);
 		}
+	}
+	
+	
+	public void handleResponse(String obj) {
+		JSONObject response = new JSONObject(obj);
+		GossipingHandler gossiping = new GossipingHandler();
+		
+		String type = response.getString("type");
+		logger.info(response.toString());
+		switch(type) {
+		case "server-connection-request":	
+			try {
+				this.serverHandeler.newServerConnection(this.socket, response.getString("server"));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		case "server-connection-response":
+			this.serverHandeler.newServerConnectionConfirm(response);
+			break;
+		
+			
+		case "gossiping":			
+			try {
+				gossiping.doGossiping(response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		
+		}
+		
+		
 	}
 
 }
