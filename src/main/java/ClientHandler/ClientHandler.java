@@ -27,12 +27,16 @@ public class ClientHandler {
 	protected ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
 	protected NewIdentity newIdentity;
 	String identityName;
+	protected ChatRoom chatRoom;
+	protected String serverId;
 	public ClientHandler(Socket socket) {
 		
 		this.socket = socket;
 		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
-		ChatRoom chatRoom = chatRoomHashMap.get("MainHall"); 
-		mainHall = chatRoom.getRoomName();
+		serverId = ServerState.getServerState().getServerName();
+		ChatRoom chatRoomMainHall = chatRoomHashMap.get("MainHall"); 
+		mainHall = chatRoomMainHall.getRoomName();
+		chatRoom = new ChatRoom();
 		
 	}
 	
@@ -97,7 +101,6 @@ public class ClientHandler {
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
 			if (!roomId.equals("MainHall")) {
-				ChatRoom chatRoom = new ChatRoom();
 				logger.debug("new identity  ::  "+identityName);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
@@ -122,8 +125,82 @@ public class ClientHandler {
 			
 			break;
 		case "joinroom":
-			System.out.println("joinroom");
+			String roomIdJoinRoom = jsnObj.getString("roomid");
+			String identityJoinRoom = newIdentity.getName();
+			JSONObject joinRoomRes;
+			JSONObject joinRoomUnsuccessRes;
+			boolean isRoomChangeSuccess = true;
+			if (chatRoomHashMap.containsKey(roomIdJoinRoom)) {
+				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdJoinRoom);
+				String owner = chatRoomJoinRoom.getOwner();
+				if (!owner.equals(identityJoinRoom)) {
+					chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
+					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
+					joinRoomRes = changeRoom(identityJoinRoom, mainHall, roomIdJoinRoom);
+					logger.debug("JoinRoom :: "+joinRoomRes);
+					//TODO
+					//send the joinRoomRes to members of the former chat room, members  of the new chat room, and to the client
+					try {
+						Sender.sendRespond(socket, joinRoomRes);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				} else {
+					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
+					isRoomChangeSuccess = false;
+					
+					
+				}
+			}
+//			else if (false) {
+//				//TODO
+//				//Check the global rooms of the user where he exist	and reply
+//			}
+			else {
+				//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
+				isRoomChangeSuccess = false;
+				
+			}
+			
+			if (!isRoomChangeSuccess) {
+				joinRoomUnsuccessRes = changeRoom(identityJoinRoom, roomIdJoinRoom, roomIdJoinRoom);
+				try {
+					Sender.sendRespond(socket, joinRoomUnsuccessRes);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
 			break;
+		case "movejoin":
+			String roomIdMoveJoin = jsnObj.getString("roomid");
+			String formerRoomId = jsnObj.getString("former");
+			String identityMoveJoin = newIdentity.getName();
+			JSONObject serverChangeRes;
+			JSONObject moveJoinRes;
+			if (chatRoomHashMap.containsKey(roomIdMoveJoin)) {
+				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdMoveJoin);
+				chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
+				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, roomIdMoveJoin);
+				//TODO
+				//broadcast the message to the all the users in new room
+			} else {
+				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
+				//TODO
+				//broadcast the message to the all the users in mainHall
+			}
+			
+			serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type", "serverchange");
+			try {
+				Sender.sendRespond(socket, serverChangeRes);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		case "deleteroom":
 			System.out.println("deleteroom");
 			break;
