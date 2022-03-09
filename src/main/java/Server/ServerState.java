@@ -3,6 +3,7 @@ package Server;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.sql.Timestamp;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -26,6 +27,10 @@ public class ServerState {
 	private int clientPort, serverPort;
 	
 //	private Server currentServer;
+	private Server leaderServer;
+	
+	private ConcurrentLinkedQueue<String> chatRoomsRequestIDs;
+	private ConcurrentLinkedQueue<String> identityRequestIDs;
 	
 	private static ServerState serverState;
 	
@@ -75,9 +80,11 @@ public class ServerState {
 			}
 		}
 		
-		
+//		initial leader server is s1		
+		this.leaderServer = new Server("s1", "localhost", 4444, 5555);		
 		
 		//hard coded end
+		
 		
 		//create a mainhall room
 		String mainHall = "MainHall-"+this.serverName;
@@ -165,6 +172,31 @@ public class ServerState {
 	public void setOtherServersUsers(ConcurrentHashMap<String, String> otherServersUsers) {
 		this.otherServersUsers = otherServersUsers;
 	}
+
+	public Server getLeaderServer() {
+		return leaderServer;
+	}
+
+	public void setLeaderServer(Server leaderServer) {
+		this.leaderServer = leaderServer;
+	}
+	
+	public boolean checkChatRoomRequestCompleted(String id) {
+		return this.chatRoomsRequestIDs.contains(id);
+	}
+	
+	public void addChatRoomRequestID(String id) {
+		this.chatRoomsRequestIDs.add(id);
+	}
+	
+	public boolean checkIdentityRequestCompleted(String id) {
+		return this.identityRequestIDs.contains(id);
+	}
+	
+	public void addIdentityRequesID(String id) {
+		this.chatRoomsRequestIDs.add(id);
+	}
+
 
 	public void createServer2ServerConnection() {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {

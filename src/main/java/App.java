@@ -23,7 +23,11 @@ public class App
     	
     	logger.info("Stating Server");
     	String confFilePath = "conf.txt"; 
+    	//execute with jar
     	ServerState currentServer = ServerState.getServerState().initializeServer(args[0], confFilePath);
+    	
+    	//execute with eclips debug mode
+//    	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
     	
     	logger.info("Command line arguments : "+ args[0]);
     	
