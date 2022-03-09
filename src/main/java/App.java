@@ -1,5 +1,3 @@
-
-
 import java.io.*;  
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +23,9 @@ public class App
     	
     	logger.info("Stating Server");
     	String confFilePath = "conf.txt"; 
-    	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
+    	ServerState currentServer = ServerState.getServerState().initializeServer(args[0], confFilePath);
+    	
+    	logger.info("Command line arguments : "+ args[0]);
     	
     	//create server connection    	
     	Thread server2serverListingThread = new Thread() {
