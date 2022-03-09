@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -202,7 +203,46 @@ public class ClientHandler {
 				e.printStackTrace();
 			}
 		case "deleteroom":
-			System.out.println("deleteroom");
+			String roomIdDelRoom = jsnObj.getString("roomid");
+			String identityDelRoom = newIdentity.getName();
+			ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdDelRoom);
+			String owner = chatRoomJoinRoom.getOwner();
+			JSONObject delRoomRes;
+			JSONObject delRoomUnsucessRes;
+			JSONObject delRoomClientRes;
+			JSONObject RoomChangeDelRoomRes;
+			boolean isDelSuccess = true;
+			if (owner.equals(identityDelRoom)) {
+				ConcurrentLinkedQueue<User> userListDeleteRoom = chatRoom.deleteRoom(roomIdDelRoom);
+				delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
+				//TODO
+				//send delRoomRes to other servers
+				RoomChangeDelRoomRes = changeRoom(identityDelRoom, roomIdDelRoom, mainHall);
+				//TODO
+				//RoomChangeDelRoomRes message to all members of the deleted room showing each member id moving
+				//RoomChangeDelRoomRes message to client of the deleted room
+				delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+					try {
+						Sender.sendRespond(socket, delRoomClientRes);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				
+			} else {
+				isDelSuccess = false;
+			}
+			
+			if (!isDelSuccess) {
+				delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+				try {
+					Sender.sendRespond(socket, delRoomUnsucessRes);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			break;
 		case "quit":
 			System.out.println("quit");
