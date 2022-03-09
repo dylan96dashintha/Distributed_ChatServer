@@ -27,12 +27,14 @@ public class ClientHandler {
 	protected ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
 	protected NewIdentity newIdentity;
 	String identityName;
+	protected ChatRoom chatRoom;
 	public ClientHandler(Socket socket) {
 		
 		this.socket = socket;
 		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
-		ChatRoom chatRoom = chatRoomHashMap.get("MainHall"); 
-		mainHall = chatRoom.getRoomName();
+		ChatRoom chatRoomMainHall = chatRoomHashMap.get("MainHall"); 
+		mainHall = chatRoomMainHall.getRoomName();
+		chatRoom = new ChatRoom();
 		
 	}
 	
@@ -97,7 +99,6 @@ public class ClientHandler {
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
 			if (!roomId.equals("MainHall")) {
-				ChatRoom chatRoom = new ChatRoom();
 				logger.debug("new identity  ::  "+identityName);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
@@ -122,8 +123,40 @@ public class ClientHandler {
 			
 			break;
 		case "joinroom":
-			System.out.println("joinroom");
+			String roomIdJoinRoom = jsnObj.getString("roomid");
+			String identityJoinRoom = newIdentity.getName();
+			JSONObject joinRoomRes;
+			boolean isRoomChangeSuccess = true;
+			if (chatRoomHashMap.containsKey(roomIdJoinRoom)) {
+				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdJoinRoom);
+				String owner = chatRoomJoinRoom.getOwner();
+				if (!owner.equals(identityJoinRoom)) {
+					chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
+					joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
+					
+				} else {
+					joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
+				}
+			}
+//			else if (false) {
+//				//TODO
+//				//Check the global rooms of the user where he exist	and reply
+//			}
+			else {
+				joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
+			}
+			
+			
+			
+			try {
+				logger.debug("JoinRoom :: "+joinRoomRes);
+				Sender.sendRespond(socket, joinRoomRes);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
+		
 		case "deleteroom":
 			System.out.println("deleteroom");
 			break;

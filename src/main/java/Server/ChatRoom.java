@@ -75,5 +75,9 @@ public class ChatRoom {
 		return owner;
 	}
 	
+	public void joinRoom(User user) {
+		userListInRoom.add(user);
+	}
+	
 
 }

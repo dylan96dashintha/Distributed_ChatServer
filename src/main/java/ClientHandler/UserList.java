@@ -9,13 +9,14 @@ import Server.ServerState;
 public class UserList {
 	//public ArrayList<User> userArrayList = new ArrayList();
 	public ConcurrentLinkedQueue<User> identityList = ServerState.getServerState().getIdentityList();
-	
+	private User user;
 	public boolean addUser(String name, Socket socket) {
 		if (isUnique(name)) {
 			//TODO
 			//check with other servers
 			
-			User user = new User(name, socket);
+			user = new User(name, socket);
+			setUser(user);
 			
 			//TODO
 			//Add user to other servers users list
@@ -27,6 +28,14 @@ public class UserList {
 		
 	}
 	
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
 	public boolean isUnique(String name) {
 		boolean isUni = true;
 		for (User u : identityList) {
