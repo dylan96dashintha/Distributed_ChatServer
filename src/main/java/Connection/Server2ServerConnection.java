@@ -88,6 +88,42 @@ public class Server2ServerConnection extends Thread{
 				e.printStackTrace();
 			}
 			break;
+			
+		case "global-chatrooms-request":
+			try {
+				this.serverHandeler.getGlobalChatRooms(this.socket, response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case "global-chatrooms-response":
+			try {
+				this.serverHandeler.setGlobalChatRooms(response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case "global-identity-request":
+			try {
+				this.serverHandeler.getGlobalIdentities(this.socket, response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case "global-identity-response":
+			try {
+				this.serverHandeler.setGlobalIdentities(response);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 		
 		}
 		
