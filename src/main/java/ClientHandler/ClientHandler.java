@@ -58,6 +58,7 @@ public class ClientHandler {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
 				logger.debug("new identity22  ::  "+newIdentity.getName());
 				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
+				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
 				newIdentity.getUserList().getUser().setRoomName(mainHall);
 				
 			} else {
@@ -106,7 +107,11 @@ public class ClientHandler {
 			JSONObject whoRes;
 			String roomIdTypeWho = newIdentity.getUserList().getUser().getRoomName();
 			ConcurrentLinkedQueue<User> userListTypeWho = chatRoom.getUserListInRoom(roomIdTypeWho);
-			whoRes = new JSONObject().put("owner", newIdentity.getName()).put("identities", userListTypeWho).put("roomid", roomIdTypeWho).put("type", "roomcontents");
+			ArrayList<String> userInRoom = new ArrayList();
+			for (User user : userListTypeWho) {
+				userInRoom.add(user.getName());
+			}
+			whoRes = new JSONObject().put("owner", newIdentity.getName()).put("identities", userInRoom).put("roomid", roomIdTypeWho).put("type", "roomcontents");
 			try {
 				logger.debug("Case who :: "+whoRes);
 				Sender.sendRespond(socket, whoRes);

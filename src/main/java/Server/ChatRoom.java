@@ -119,4 +119,9 @@ public class ChatRoom {
 		}
 		return isUserOwn;
 	}
+	
+	public void addUsersToMainHall(User user) {
+		ChatRoom chatRoom = chatRoomHashMap.get("MainHall");
+		chatRoom.joinRoom(user);
+	}
 }
