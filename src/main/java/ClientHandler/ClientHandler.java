@@ -1,6 +1,7 @@
 package ClientHandler;
 import org.json.JSONObject;
 
+import Messaging.LeaderChannel;
 import Messaging.Sender;
 import Server.ChatRoom;
 import Server.ServerState;
@@ -41,6 +42,7 @@ public class ClientHandler {
 	}
 	
 	public void getTypeFunctionality(JSONObject jsnObj) {
+		logger.info("AAAAAAAAAAAAAAAAAAAAAAA" + jsnObj.toString());
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
@@ -101,13 +103,19 @@ public class ClientHandler {
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
 			if (!roomId.equals("MainHall")) {
-				logger.debug("new identity  ::  "+identityName);
+				logger.info("new identity  ::  "+identityName);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
+					logger.info("Approved");
+					
+					for (ConcurrentHashMap.Entry<String, String> e : LeaderChannel.getGlobalChatRooms().entrySet()) {
+						logger.info("Server " + e.getKey() + " room " + e.getValue());
+					}
+					
 					chatRoomHashMap.put(roomId, chatRoom);
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
 					try {
-						logger.debug("createroom :: createRoomRes :: "+ createRoomRes);
+						logger.info("createroom :: createRoomRes :: "+ createRoomRes);
 						Sender.sendRespond(socket, createRoomRes);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -116,6 +124,7 @@ public class ClientHandler {
 					//TODO
 					//Broadcast roomchange message to teh clients that are members of the chat room
 					//Check former_room name
+					
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
 				} else {
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
