@@ -78,7 +78,11 @@ public class ClientHandler {
 			break;
 			
 		case "message":
-			System.out.println("message");
+			String content = jsnObj.getString("content");
+			String identityMessage = newIdentity.getName();
+			JSONObject messageRes = new JSONObject().put("content", content).put("identity", identityMessage).put("type", "message");
+			//TODO
+			//broadcast the messageRes to all the users in the room
 			break;
 		case "list":
 			JSONObject resList;
@@ -99,7 +103,17 @@ public class ClientHandler {
 			
 			break;
 		case "who":
-			System.out.println("who");
+			JSONObject whoRes;
+			String roomIdTypeWho = newIdentity.getUserList().getUser().getRoomName();
+			ConcurrentLinkedQueue<User> userListTypeWho = chatRoom.getUserListInRoom(roomIdTypeWho);
+			whoRes = new JSONObject().put("owner", newIdentity.getName()).put("identities", userListTypeWho).put("roomid", roomIdTypeWho).put("type", "roomcontents");
+			try {
+				logger.debug("Case who :: "+whoRes);
+				Sender.sendRespond(socket, whoRes);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			break;
 		case "createroom":
 			String roomId = jsnObj.getString("roomid");

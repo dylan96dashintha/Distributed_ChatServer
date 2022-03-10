@@ -1,5 +1,4 @@
 package Server;
-
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,6 +19,16 @@ public class ChatRoom {
 	
 	public ConcurrentLinkedQueue<User> getUserListInRoom() {
 		return userListInRoom;
+	}
+	
+	public ConcurrentLinkedQueue<User> getUserListInRoom(String roomId) {
+		ChatRoom chatRoom;
+		if (roomId.startsWith("MainHall")) {
+			chatRoom = chatRoomHashMap.get("MainHall");
+		} else {
+			chatRoom = chatRoomHashMap.get(roomId);	
+		}
+		return chatRoom.getUserListInRoom();
 	}
 
 	public ChatRoom() {
