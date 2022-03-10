@@ -25,7 +25,7 @@ public class ServerState {
 	
 	private int clientPort, serverPort;
 	
-	private Server currentServer;
+//	private Server currentServer;
 	
 	private static ServerState serverState;
 	
@@ -34,6 +34,11 @@ public class ServerState {
 	private ConcurrentHashMap<String, Server> serversHashmap = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashmap = new ConcurrentHashMap<>();
 	private  ConcurrentLinkedQueue<User> identityList = new ConcurrentLinkedQueue<>();
+	
+	private ConcurrentHashMap<String, String> otherServersChatRooms = new ConcurrentHashMap<>();
+//	otherServersChatRooms<ChatroomName, server_name>
+	private ConcurrentHashMap<String, String> otherServersUsers = new ConcurrentHashMap<>();
+//	otherServersUsers<user_identity, server_name>
 	
 	private ServerState() {}
 	
@@ -57,13 +62,21 @@ public class ServerState {
 		//TODO
 		//Have to initialize server using configure file
 		//hard coded start
-		this.serverName = "s1";
-		this.serverAddress = "localhost";
-		this.clientPort = 4444;
-		this.serverPort = 5555;
-		
+		serversHashmap.put("s1", new Server("s1", "localhost", 4444, 5555));
 		serversHashmap.put("s2", new Server("s2", "localhost", 4445, 5556));
 		serversHashmap.put("s3", new Server("s3", "localhost", 4446, 5557));
+		
+		for (ConcurrentHashMap.Entry<String,Server> e : serversHashmap.entrySet()) {
+			if(e.getKey().equals(serverName)) {
+				this.serverName = serverName;
+				this.serverAddress = e.getValue().getServerAddress();
+				this.clientPort = e.getValue().getClientPort();
+				this.serverPort = e.getValue().getServerPort();
+			}
+		}
+		
+		
+		
 		//hard coded end
 		
 		//create a mainhall room
@@ -133,6 +146,26 @@ public class ServerState {
 		this.serversHashmap.put(server.getServerName(), server);
 	}
 	
+	public ConcurrentHashMap<String, Server> getServersHashmap() {
+		return this.serversHashmap;
+	}
+
+	public ConcurrentHashMap<String, String> getOtherServersChatRooms() {
+		return otherServersChatRooms;
+	}
+
+	public void setOtherServersChatRooms(ConcurrentHashMap<String, String> otherServersChatRooms) {
+		this.otherServersChatRooms = otherServersChatRooms;
+	}
+
+	public ConcurrentHashMap<String, String> getOtherServersUsers() {
+		return otherServersUsers;
+	}
+
+	public void setOtherServersUsers(ConcurrentHashMap<String, String> otherServersUsers) {
+		this.otherServersUsers = otherServersUsers;
+	}
+
 	public void createServer2ServerConnection() {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {
 			if (!(entry.getKey().equals(this.serverName))) {
@@ -142,11 +175,13 @@ public class ServerState {
 							+ " using address " +entry.getValue().getServerAddress() 
 							+ " port " + entry.getValue().getServerPort());
 					JSONObject obj = new JSONObject();
-					obj.put("type","server-connection").put("connected", "true").put("server", this.serverName);
+					obj.put("type","server-connection-request").put("server", this.serverName);
 					Sender.sendRespond(socket, obj);
 					Server s = entry.getValue();
 					s.setServerSocketConnection(socket);
 					replaceServerbByName(s);
+					Server2ServerConnection s2sc = new Server2ServerConnection(socket);
+					s2sc.start();
 				}catch (UnknownHostException u)
 		        {
 		            logger.error(u.getMessage());
