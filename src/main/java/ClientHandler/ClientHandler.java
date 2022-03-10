@@ -45,6 +45,7 @@ public class ClientHandler {
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
+		
 		case "newidentity":
 			identityName = jsnObj.getString("identity");
 			newIdentity = new NewIdentity(identityName, socket);
@@ -55,6 +56,7 @@ public class ClientHandler {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
 				logger.debug("new identity22  ::  "+newIdentity.getName());
 				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
+				newIdentity.getUserList().getUser().setRoomName(mainHall);
 				
 			} else {
 				res = new JSONObject().put("approved", "false").put("type", "newidentity");
@@ -118,6 +120,7 @@ public class ClientHandler {
 					//Broadcast roomchange message to teh clients that are members of the chat room
 					//Check former_room name
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
+					newIdentity.getUserList().getUser().setRoomName(roomId);
 				} else {
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
 				}
@@ -138,6 +141,7 @@ public class ClientHandler {
 					chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
 					joinRoomRes = changeRoom(identityJoinRoom, mainHall, roomIdJoinRoom);
+					newIdentity.getUserList().getUser().setRoomName(roomIdJoinRoom);
 					logger.debug("JoinRoom :: "+joinRoomRes);
 					//TODO
 					//send the joinRoomRes to members of the former chat room, members  of the new chat room, and to the client
@@ -189,10 +193,12 @@ public class ClientHandler {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, roomIdMoveJoin);
 				//TODO
 				//broadcast the message to the all the users in new room
+				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
 			} else {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
 				//TODO
 				//broadcast the message to the all the users in mainHall
+				newIdentity.getUserList().getUser().setRoomName(mainHall);
 			}
 			
 			serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type", "serverchange");
@@ -205,47 +211,83 @@ public class ClientHandler {
 		case "deleteroom":
 			String roomIdDelRoom = jsnObj.getString("roomid");
 			String identityDelRoom = newIdentity.getName();
-			ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdDelRoom);
-			String owner = chatRoomJoinRoom.getOwner();
-			JSONObject delRoomRes;
-			JSONObject delRoomUnsucessRes;
-			JSONObject delRoomClientRes;
-			JSONObject RoomChangeDelRoomRes;
-			boolean isDelSuccess = true;
-			if (owner.equals(identityDelRoom)) {
-				ConcurrentLinkedQueue<User> userListDeleteRoom = chatRoom.deleteRoom(roomIdDelRoom);
-				delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
-				//TODO
-				//send delRoomRes to other servers
-				RoomChangeDelRoomRes = changeRoom(identityDelRoom, roomIdDelRoom, mainHall);
-				//TODO
-				//RoomChangeDelRoomRes message to all members of the deleted room showing each member id moving
-				//RoomChangeDelRoomRes message to client of the deleted room
-				delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
-					try {
-						Sender.sendRespond(socket, delRoomClientRes);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				
+			boolean isUserDelRoom = chatRoom.isUserOwnRoomReturnBool(identityDelRoom);
+			if (isUserDelRoom) {
+				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdDelRoom);
+				String owner = chatRoomJoinRoom.getOwner();
+				deleteRoom(owner, identityDelRoom, roomIdDelRoom);	
 			} else {
-				isDelSuccess = false;
-			}
-			
-			if (!isDelSuccess) {
-				delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+				JSONObject delRoomUnsucess = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 				try {
-					Sender.sendRespond(socket, delRoomUnsucessRes);
+					Sender.sendRespond(socket, delRoomUnsucess);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					// TODO Auto-generated catch block.
 					e.printStackTrace();
 				}
 			}
 			
+//			
+//			JSONObject delRoomRes;
+//			JSONObject delRoomUnsucessRes;
+//			JSONObject delRoomClientRes;
+//			JSONObject RoomChangeDelRoomRes;
+//			boolean isDelSuccess = true;
+//			if (owner.equals(identityDelRoom)) {
+//				ConcurrentLinkedQueue<User> userListDeleteRoom = chatRoom.deleteRoom(roomIdDelRoom);
+//				delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
+//				//TODO
+//				//send delRoomRes to other servers
+//				RoomChangeDelRoomRes = changeRoom(identityDelRoom, roomIdDelRoom, mainHall);
+//				newIdentity.getUserList().getUser().setRoomName(mainHall);
+//				//TODO
+//				//RoomChangeDelRoomRes message to all members of the deleted room showing each member id moving
+//				//RoomChangeDelRoomRes message to client of the deleted room
+//				delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+//					try {
+//						Sender.sendRespond(socket, delRoomClientRes);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				
+//			} else {
+//				isDelSuccess = false;
+//			}
+//			
+//			if (!isDelSuccess) {
+//				delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+//				try {
+//					Sender.sendRespond(socket, delRoomUnsucessRes);
+//				} catch (IOException e) {
+//					// TODO Auto-generated catch block.
+//					e.printStackTrace();
+//				}
+//			}
+			
 			break;
 		case "quit":
-			System.out.println("quit");
+			String identityQuit = newIdentity.getName();
+			JSONObject roomChangeQuit;
+			boolean isUser = chatRoom.isUserOwnRoomReturnBool(identityQuit);
+			ChatRoom chatRoomQuit = chatRoom.isUserOwnRoom(identityQuit);
+			if (!isUser) {
+				boolean isUserQuit = newIdentity.removeUser(newIdentity.getUserList().getUser());
+				roomChangeQuit = changeRoom(identityQuit, newIdentity.getUserList().getUser().getRoomName(), "");
+			} else {
+				roomChangeQuit = changeRoom(identityQuit, chatRoomQuit.getRoomName(), "");
+				
+				boolean isUserQuit = newIdentity.removeUser(newIdentity.getUserList().getUser());
+				//TODO
+				//Server closes the connection
+				deleteRoom(identityQuit, identityQuit, chatRoomQuit.getRoomName());
+			}
+			try {
+				Sender.sendRespond(socket, roomChangeQuit);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			break;
 		}
 	}
@@ -255,5 +297,45 @@ public class ClientHandler {
 		JSONObject roomChangeRes;
 		roomChangeRes = new JSONObject().put("roomid" , newRoom).put("former" , formerRoom).put("identity", identity).put("type", "roomchange");
 		return roomChangeRes;
+	}
+	
+	public void deleteRoom(String owner, String identityDelRoom, String roomIdDelRoom) {
+		JSONObject delRoomRes;
+		JSONObject delRoomUnsucessRes;
+		JSONObject delRoomClientRes;
+		JSONObject RoomChangeDelRoomRes;
+		boolean isDelSuccess = true;
+		if (owner.equals(identityDelRoom)) {
+			ConcurrentLinkedQueue<User> userListDeleteRoom = chatRoom.deleteRoom(roomIdDelRoom);
+			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
+			//TODO
+			//send delRoomRes to other servers
+			RoomChangeDelRoomRes = changeRoom(identityDelRoom, roomIdDelRoom, mainHall);
+			newIdentity.getUserList().getUser().setRoomName(mainHall);
+			//TODO
+			//RoomChangeDelRoomRes message to all members of the deleted room showing each member id moving
+			//RoomChangeDelRoomRes message to client of the deleted room
+			delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+				try {
+					Sender.sendRespond(socket, delRoomClientRes);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+		} else {
+			isDelSuccess = false;
+		}
+		
+		if (!isDelSuccess) {
+			delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
+			try {
+				Sender.sendRespond(socket, delRoomUnsucessRes);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block.
+				e.printStackTrace();
+			}
+		}
+		
 	}
 }

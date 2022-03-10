@@ -91,5 +91,23 @@ public class ChatRoom {
 		
 	}
 	
-
+	public ChatRoom isUserOwnRoom(String owner) {
+		ChatRoom chatRoomQuit = null;
+		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
+			if ((chatRoom.getOwner()).equals(owner)) {
+				chatRoomQuit = chatRoom;
+			}
+		}
+		return chatRoomQuit;
+	}
+	
+	public boolean isUserOwnRoomReturnBool(String owner) {
+		boolean isUserOwn = false;
+		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
+			if ((chatRoom.getOwner()).equals(owner)) {
+				isUserOwn = true;
+			}
+		}
+		return isUserOwn;
+	}
 }
