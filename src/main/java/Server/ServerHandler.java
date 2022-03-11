@@ -87,9 +87,8 @@ public class ServerHandler {
 			i++;
 		}
 		msg.put("identities", objArry);
-		logger.info("respond "+msg.toString()+ " " + socket.getPort());
 		Sender.sendRespond(socket, msg);
-		logger.info("respond sent"+msg.toString());
+
 	}
 	
 	public void setGlobalIdentities(JSONObject response) throws IOException {
@@ -100,8 +99,8 @@ public class ServerHandler {
 					response.getJSONArray("identities").getJSONObject(i).getString("user"),
 					response.getJSONArray("identities").getJSONObject(i).getString("server"));
 			}
-		ServerState.getServerState().setOtherServersChatRooms(users);
-		ServerState.getServerState().addChatRoomRequestID(response.getString("id"));
+		ServerState.getServerState().setOtherServersUsers(users);
+		ServerState.getServerState().addIdentityRequesID(response.getString("id"));
 	}
 	
 	

@@ -28,7 +28,9 @@ public class GossipingHandler {
 	
 	
 	public void sendNewIdentityGossip() throws IOException {
-		
+		Gossiping gossip = new Gossiping();
+		JSONObject obj = gossip.createNewIdentityGossipingMsg();
+		gossip.spreadGossipMsg(obj);
 	}
 	
 	
@@ -41,22 +43,22 @@ public class GossipingHandler {
 		switch (msg.getString("purpus")) {
 		
 		case "gossiping-chatroom":
-			gossiping.updateUsingChatRoomGossipingMsg(msg);
-			if (gossiping.sholdSpredGossip(msg)) {
+			if (gossiping.sholdUpdateGossip(msg)) {
+				gossiping.updateUsingChatRoomGossipingMsg(msg);				
 				gossiping.spreadGossipMsg(msg);
-			}
+			}	
 			break;
 			
 		case "gossiping-new-identity":
-			gossiping.updateUsingNewIdentityGossipingMsg(msg);
-			if (gossiping.sholdSpredGossip(msg)) {
+			if (gossiping.sholdUpdateGossip(msg)) {
+				gossiping.updateUsingNewIdentityGossipingMsg(msg);			
 				gossiping.spreadGossipMsg(msg);
 			}
 			break;
 			
 		case "gossiping-leader-changed":
-			gossiping.updateUsingLeaderChangedGossipingMsg(msg);
-			if (gossiping.sholdSpredGossip(msg)) {
+			if (gossiping.sholdUpdateGossip(msg)) {
+				gossiping.updateUsingLeaderChangedGossipingMsg(msg);			
 				gossiping.spreadGossipMsg(msg);
 			}
 			break;
