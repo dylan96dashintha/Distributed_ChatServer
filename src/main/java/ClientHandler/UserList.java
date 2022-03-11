@@ -51,4 +51,13 @@ public class UserList {
 	public boolean isUniqueOtherServer() {
 		return true;
 	}
+	
+	public boolean removeUser(User user) {
+		if (identityList.contains(user)) {
+			identityList.remove(user);
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

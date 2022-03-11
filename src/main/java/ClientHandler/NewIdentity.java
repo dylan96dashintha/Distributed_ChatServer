@@ -7,6 +7,7 @@ public class NewIdentity {
 	Socket socket;
 	private UserList userList;
 	public NewIdentity(String name, Socket socket) {
+		userList = new UserList();
 		this.name = name;
 		this.socket = socket;
 	}
@@ -20,7 +21,6 @@ public class NewIdentity {
 	public boolean validation() {
 		int size = name.length();
 		if (size>3 && size <16 && isAlphaNumeric()) {
-			userList = new UserList();
 			setUserList(userList);
 			boolean isApproved = userList.addUser(name, socket);
 			return isApproved;
@@ -41,5 +41,9 @@ public class NewIdentity {
 	        return  name.matches("^[a-zA-Z0-9]*$");
 	    }
 	
+	public boolean removeUser(User user) {
+		boolean isUserRemoved = userList.removeUser(user);
+		return isUserRemoved;
+	}
 
 }

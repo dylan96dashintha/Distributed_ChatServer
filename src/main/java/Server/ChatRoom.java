@@ -1,5 +1,4 @@
 package Server;
-
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -18,6 +17,20 @@ public class ChatRoom {
 	private ConcurrentLinkedQueue<User> userListInRoom;
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
 	
+	public ConcurrentLinkedQueue<User> getUserListInRoom() {
+		return userListInRoom;
+	}
+	
+	public ConcurrentLinkedQueue<User> getUserListInRoom(String roomId) {
+		ChatRoom chatRoom;
+		if (roomId.startsWith("MainHall")) {
+			chatRoom = chatRoomHashMap.get("MainHall");
+		} else {
+			chatRoom = chatRoomHashMap.get(roomId);	
+		}
+		return chatRoom.getUserListInRoom();
+	}
+
 	public ChatRoom() {
 		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		this.userListInRoom = new ConcurrentLinkedQueue<User>();
@@ -79,5 +92,36 @@ public class ChatRoom {
 		userListInRoom.add(user);
 	}
 	
-
+	public ConcurrentLinkedQueue<User> deleteRoom(String chatRoom) {
+		ChatRoom chatRoomBeforeDelete = chatRoomHashMap.get(chatRoom);
+		ConcurrentLinkedQueue<User> userListDeletedRoom = chatRoomBeforeDelete.getUserListInRoom();
+		chatRoomHashMap.remove(chatRoom);
+		return userListDeletedRoom;
+		
+	}
+	
+	public ChatRoom isUserOwnRoom(String owner) {
+		ChatRoom chatRoomQuit = null;
+		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
+			if ((chatRoom.getOwner()).equals(owner)) {
+				chatRoomQuit = chatRoom;
+			}
+		}
+		return chatRoomQuit;
+	}
+	
+	public boolean isUserOwnRoomReturnBool(String owner) {
+		boolean isUserOwn = false;
+		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
+			if ((chatRoom.getOwner()).equals(owner)) {
+				isUserOwn = true;
+			}
+		}
+		return isUserOwn;
+	}
+	
+	public void addUsersToMainHall(User user) {
+		ChatRoom chatRoom = chatRoomHashMap.get("MainHall");
+		chatRoom.joinRoom(user);
+	}
 }
