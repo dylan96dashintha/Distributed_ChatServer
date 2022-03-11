@@ -1,6 +1,7 @@
 package ClientHandler;
 import org.json.JSONObject;
 
+import Gossiping.GossipingHandler;
 import Messaging.LeaderChannel;
 import Messaging.Sender;
 import Server.ChatRoom;
@@ -42,7 +43,6 @@ public class ClientHandler {
 	}
 	
 	public void getTypeFunctionality(JSONObject jsnObj) {
-		logger.info("AAAAAAAAAAAAAAAAAAAAAAA" + jsnObj.toString());
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
@@ -97,20 +97,33 @@ public class ClientHandler {
 			break;
 		case "who":
 			System.out.println("who");
+//			GossipingHandler gh = new GossipingHandler();
+//			try {
+//				gh.sendNewIdentityGossip();
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
 			break;
 		case "createroom":
 			String roomId = jsnObj.getString("roomid");
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
 			if (!roomId.equals("MainHall")) {
-				logger.info("new identity  ::  "+identityName);
+				logger.debug("new identity  ::  "+identityName);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
-					logger.info("Approved");
+					logger.debug("Approved");
 					
-					for (ConcurrentHashMap.Entry<String, String> e : LeaderChannel.getGlobalChatRooms().entrySet()) {
-						logger.info("Server " + e.getKey() + " room " + e.getValue());
-					}
+//					ConcurrentHashMap<String, String> seett =  LeaderChannel.getGlobalChatRooms();
+//					ConcurrentHashMap<String, String> seett22 =  LeaderChannel.getGlobalIdentities();
+//					for (ConcurrentHashMap.Entry<String, String> e : seett.entrySet()) {
+//						logger.debug("Server " + e.getValue() + " room " + e.getKey());
+//					}
+//					
+//					for (ConcurrentHashMap.Entry<String, String> e : seett22.entrySet()) {
+//						logger.debug("Server " + e.getValue() + " user " + e.getKey());
+//					}
 					
 					chatRoomHashMap.put(roomId, chatRoom);
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");

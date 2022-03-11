@@ -1,18 +1,24 @@
 package Gossiping;
 
 import java.io.IOException;
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import Server.Server;
 import Server.ServerState;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ClientHandler.User;
 import Messaging.Sender;
 import Server.ChatRoom;
 import Server.ServerState;
@@ -34,7 +40,9 @@ public class Gossiping {
 		}
 		msg.put("type", "gossiping").put("purpus", "gossiping-chatroom").put("id", gossipID).put("sent-time", new java.util.Date())
 				.put("from", ServerState.getServerState().getServerName()).put("room-list", chatRoomNames);
-
+		
+		ServerState.getServerState().addGossipingID(gossipID);
+		
 		return msg;
 
 	}
@@ -42,6 +50,19 @@ public class Gossiping {
 	public JSONObject createNewIdentityGossipingMsg() {
 		JSONObject msg = new JSONObject();
 		String gossipID = UUID.randomUUID().toString();
+
+		ConcurrentLinkedQueue<User> userList = ServerState.getServerState().getIdentityList();
+		
+		List<String> identityNames = new ArrayList<String>();
+		for (User user : userList) {
+			identityNames.add(user.getName());
+		}
+
+		msg.put("type", "gossiping").put("purpus", "gossiping-new-identity").put("id", gossipID).put("sent-time", new java.util.Date())
+				.put("from", ServerState.getServerState().getServerName()).put("identities", identityNames);
+		
+		ServerState.getServerState().addGossipingID(gossipID);
+		
 		return msg;
 	}
 
@@ -52,20 +73,86 @@ public class Gossiping {
 	}
 	
 	public void updateUsingChatRoomGossipingMsg(JSONObject obj) {
+		logger.debug("updateUsingChatRoomGossipingMsg() " + obj.toString());
 		
+		ServerState currentServer = ServerState.getServerState();
+		ConcurrentHashMap<String, String> otherServersChatRooms = currentServer.getOtherServersChatRooms();
+		
+		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
+			logger.debug("Before " + e.getKey() + " - " + e.getValue());
+		}
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersChatRooms.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(obj.getString("from")))
+		        iterator.remove();
+		}
+			
+		JSONArray chatroomArray = obj.getJSONArray("room-list");
+		
+		for (int i=0; i<chatroomArray.length(); i++) {
+			otherServersChatRooms.put(chatroomArray.getString(i), obj.getString("from"));
+		}
+		
+		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
+			logger.debug("After " + e.getKey() + " - " + e.getValue());
+		}
+		
+		ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
+		
+		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersChatRooms().entrySet()) {
+			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
+		}
+		
+		ServerState.getServerState().addGossipingID(obj.getString("id"));
+				
 	}
 	
 	public void updateUsingNewIdentityGossipingMsg(JSONObject obj) {
+		logger.debug("updateUsingNewIdentityGossipingMsg() " + obj.toString());
 		
+		ServerState currentServer = ServerState.getServerState();
+		ConcurrentHashMap<String, String> otherServersIdentities = currentServer.getOtherServersUsers();
+		
+		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
+			logger.debug("Before " + e.getKey() + " - " + e.getValue());
+		}
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersIdentities.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(obj.getString("from")))
+		        iterator.remove();
+		}
+			
+		JSONArray chatroomArray = obj.getJSONArray("identities");
+		
+		for (int i=0; i<chatroomArray.length(); i++) {
+			otherServersIdentities.put(chatroomArray.getString(i), obj.getString("from"));
+		}
+		
+		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
+			logger.debug("After " + e.getKey() + " - " + e.getValue());
+		}
+		
+		ServerState.getServerState().setOtherServersUsers(otherServersIdentities);
+		
+		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersUsers().entrySet()) {
+			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
+		}
+		
+		ServerState.getServerState().addGossipingID(obj.getString("id"));
 	}
 	
 	public void updateUsingLeaderChangedGossipingMsg(JSONObject obj) {
 		
 	}
-	public boolean sholdSpredGossip(JSONObject obj) {
+	public boolean sholdUpdateGossip(JSONObject obj) {
 		// Check the received msg should spread
 		// @param gossip msg in JSONObject
-		return false;
+		// if gossip id contains, no need to update, otherwise should update
+		if (ServerState.getServerState().isGossipingIDContains(obj.getString("id")))
+			return false;
+		return true;
 	}
 	
 	public void spreadGossipMsg(JSONObject obj) throws IOException {
