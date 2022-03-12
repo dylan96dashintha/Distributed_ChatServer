@@ -36,6 +36,10 @@ public class ChatRoom {
 		this.userListInRoom = new ConcurrentLinkedQueue<User>();
 	}
 	
+	public void setChatRoomHashMap(ConcurrentHashMap<String, ChatRoom> chatRoomHashMap) {
+		this.chatRoomHashMap = chatRoomHashMap;
+	}
+
 	public boolean createChatRoom(String roomName, String owner) {
 		this.roomName = roomName;
 		this.owner = owner;

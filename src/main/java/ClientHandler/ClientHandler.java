@@ -143,6 +143,7 @@ public class ClientHandler {
 //					}
 					
 					chatRoomHashMap.put(roomId, chatRoom);
+					chatRoom.setChatRoomHashMap(chatRoomHashMap);
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
 					try {
 						logger.info("createroom :: createRoomRes :: "+ createRoomRes);
