@@ -27,11 +27,11 @@ public class Sender {
 	
 	public static void sendMessageChatroom(String chatRoomName, JSONObject jsonObj) throws IOException {
 		
-		ChatRoom chatRoom = new ChatRoom();
-		ConcurrentHashMap<String, ChatRoom> chatRoomHashMap = chatRoom.getChatRoomHashMap();
-		ChatRoom newChatRoom = chatRoomHashMap.get(chatRoomName);
+		logger.debug("Chatroom name  ::  "+chatRoomName+jsonObj);
 		
-		ConcurrentLinkedQueue <User> UserList = newChatRoom.getUserListInRoom();
+		ChatRoom chatRoom = new ChatRoom();
+	
+		ConcurrentLinkedQueue <User> UserList = chatRoom.getUserListInRoom(chatRoomName);
 		
 		
 		   for(User user: UserList)
