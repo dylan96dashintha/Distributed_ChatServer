@@ -27,7 +27,7 @@ public class App
 //    	ServerState currentServer = ServerState.getServerState().initializeServer(args[0], confFilePath);
 //    	logger.info("Command line arguments : "+ args[0]);
     	
-    	//execute with eclips debug mode
+//    	execute with eclips debug mode
     	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
     	
 
