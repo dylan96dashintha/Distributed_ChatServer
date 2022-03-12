@@ -21,6 +21,13 @@ public class ChatRoom {
 		return userListInRoom;
 	}
 	
+	
+	
+	public ConcurrentHashMap<String, ChatRoom> getChatRoomHashMap() {
+		return chatRoomHashMap;
+	}
+
+
 	public ConcurrentLinkedQueue<User> getUserListInRoom(String roomId) {
 		ChatRoom chatRoom;
 		if (roomId.startsWith("MainHall")) {

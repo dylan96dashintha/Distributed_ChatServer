@@ -82,8 +82,18 @@ public class ClientHandler {
 			String content = jsnObj.getString("content");
 			String identityMessage = newIdentity.getName();
 			JSONObject messageRes = new JSONObject().put("content", content).put("identity", identityMessage).put("type", "message");
+			
 			//TODO
 			//broadcast the messageRes to all the users in the room
+			String roomIdTypeMessage = newIdentity.getUserList().getUser().getRoomName();
+			
+			try {
+				Sender.sendMessageChatroom(roomIdTypeMessage, jsnObj);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			
 			break;
 		case "list":
 			JSONObject resList;
