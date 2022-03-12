@@ -32,6 +32,7 @@ public class ClientHandler {
 	String identityName;
 	protected ChatRoom chatRoom;
 	protected String serverId;
+	public GossipingHandler gossipingHandle;
 	public ClientHandler(Socket socket) {
 		
 		this.socket = socket;
@@ -40,6 +41,7 @@ public class ClientHandler {
 		ChatRoom chatRoomMainHall = chatRoomHashMap.get("MainHall"); 
 		mainHall = chatRoomMainHall.getRoomName();
 		chatRoom = new ChatRoom();
+		gossipingHandle = new GossipingHandler();
 		
 	}
 	
@@ -155,6 +157,12 @@ public class ClientHandler {
 					
 					chatRoomHashMap.put(roomId, chatRoom);
 					chatRoom.setChatRoomHashMap(chatRoomHashMap);
+					try {
+						gossipingHandle.sendChatRoomCreateGossip();
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
 					try {
 						Sender.sendRespond(socket, createRoomRes);
@@ -162,14 +170,10 @@ public class ClientHandler {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					//TODO
+					//TODO - Done
 					//Broadcast roomchange message to teh clients that are members of the chat room
 					String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
-					
-					//Check former_room name
-					
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
-					logger.info("createroom :: createRoomRoomChangeRes :: "+createRoomRoomChangeRes);
 					
 					try {
 						Sender.sendMessageChatroom(formerRoomName, createRoomRoomChangeRes);
@@ -181,7 +185,14 @@ public class ClientHandler {
 					
 					newIdentity.getUserList().getUser().setRoomName(roomId);
 				} else {
+					logger.debug("create room failed");
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
+					try {
+						Sender.sendRespond(socket, createRoomRes);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				
 			}
