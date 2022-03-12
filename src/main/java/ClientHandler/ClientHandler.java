@@ -138,7 +138,7 @@ public class ClientHandler {
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
 			if (!roomId.equals("MainHall")) {
-				logger.debug("new identity  ::  "+identityName);
+				logger.debug("new identity  ::  "+identityName+" Room id :: "+roomId);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
 					logger.debug("Approved");
@@ -157,7 +157,6 @@ public class ClientHandler {
 					chatRoom.setChatRoomHashMap(chatRoomHashMap);
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
 					try {
-						logger.info("createroom :: createRoomRes :: "+ createRoomRes);
 						Sender.sendRespond(socket, createRoomRes);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -169,11 +168,11 @@ public class ClientHandler {
 					
 					//Check former_room name
 					
-					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
-					logger.info("createRoomRoomChangeRes :"+createRoomRoomChangeRes);
+					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
+					logger.info("createroom :: createRoomRoomChangeRes :: "+createRoomRoomChangeRes);
 					
 					try {
-						Sender.sendMessageChatroom(roomId, createRoomRoomChangeRes);
+						Sender.sendMessageChatroom(formerRoomName, createRoomRoomChangeRes);
 						
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -356,7 +355,6 @@ public class ClientHandler {
 	public JSONObject changeRoom(String identity, String formerRoom, String newRoom) {
 		JSONObject roomChangeRes;
 		roomChangeRes = new JSONObject().put("roomid" , newRoom).put("former" , formerRoom).put("identity", identity).put("type", "roomchange");
-		logger.debug("roomChangeRes :: "+ roomChangeRes);
 		return roomChangeRes;
 	}
 	
