@@ -1,27 +1,41 @@
 package ClientHandler;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import Gossiping.GossipingHandler;
 import Server.ServerState;
 
 public class UserList {
 	//public ArrayList<User> userArrayList = new ArrayList();
 	public ConcurrentLinkedQueue<User> identityList = ServerState.getServerState().getIdentityList();
+	public ConcurrentHashMap<String, String> otherServerUsers;
+	public GossipingHandler gossipingHandle = new GossipingHandler();
 	private User user;
 	public boolean addUser(String name, Socket socket) {
-		if (isUnique(name)) {
-			//TODO
+		if (isUnique(name) && isUniqueOtherServer(name)) {
+			//TODO - Done
 			//check with other servers
-			
+			//Done
 			user = new User(name, socket);
 			setUser(user);
 			
-			//TODO
+			//TODO - Done
 			//Add user to other servers users list
 			identityList.add(user);
-			return true;
+			ServerState.getServerState().setIdentityList(identityList);
+			try {
+				gossipingHandle.sendNewIdentityGossip();
+				return true;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+			
 		} else {
 			return false;
 		}
@@ -46,10 +60,15 @@ public class UserList {
 		return isUni;
 	}
 	
-	//TODO 
+	//TODO - Done
 	//Check with other servers to check the user is unique
-	public boolean isUniqueOtherServer() {
-		return true;
+	public boolean isUniqueOtherServer(String name) {
+		otherServerUsers = ServerState.getServerState().getOtherServersUsers();
+		boolean isUniOtherserver = true;
+		if (otherServerUsers.containsKey(name)) {
+			isUniOtherserver = false;
+		} 
+		return isUniOtherserver;
 	}
 	
 	public boolean removeUser(User user) {
