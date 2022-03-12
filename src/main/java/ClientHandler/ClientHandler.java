@@ -53,7 +53,7 @@ public class ClientHandler {
 			newIdentity = new NewIdentity(identityName, socket);
 			boolean isApproved = newIdentity.validation();
 			JSONObject res;
-			JSONObject roomChangeResNewIdentity;
+			JSONObject roomChangeResNewIdentity = null;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
 				logger.debug("new identity22  ::  "+newIdentity.getName());
@@ -71,6 +71,7 @@ public class ClientHandler {
 				if (isApproved) {
 					//TODO- Messaging
 					//Broadcast roomChangeResNewIdentity to all the users in MainHall including the connecting clientS
+					Sender.sendMessageChatroom(mainHall, roomChangeResNewIdentity);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -82,8 +83,18 @@ public class ClientHandler {
 			String content = jsnObj.getString("content");
 			String identityMessage = newIdentity.getName();
 			JSONObject messageRes = new JSONObject().put("content", content).put("identity", identityMessage).put("type", "message");
-			//TODO
+			
+			//TODO-done
 			//broadcast the messageRes to all the users in the room
+			String roomIdTypeMessage = newIdentity.getUserList().getUser().getRoomName();
+			
+			try {
+				Sender.sendMessageChatroom(roomIdTypeMessage, messageRes);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			
 			break;
 		case "list":
 			JSONObject resList;
@@ -154,9 +165,21 @@ public class ClientHandler {
 					}
 					//TODO
 					//Broadcast roomchange message to teh clients that are members of the chat room
+					String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
+					
 					//Check former_room name
 					
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
+					logger.info("createRoomRoomChangeRes :"+createRoomRoomChangeRes);
+					
+					try {
+						Sender.sendMessageChatroom(roomId, createRoomRoomChangeRes);
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
 					newIdentity.getUserList().getUser().setRoomName(roomId);
 				} else {
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
@@ -333,6 +356,7 @@ public class ClientHandler {
 	public JSONObject changeRoom(String identity, String formerRoom, String newRoom) {
 		JSONObject roomChangeRes;
 		roomChangeRes = new JSONObject().put("roomid" , newRoom).put("former" , formerRoom).put("identity", identity).put("type", "roomchange");
+		logger.debug("roomChangeRes :: "+ roomChangeRes);
 		return roomChangeRes;
 	}
 	
