@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import ClientHandler.ClientHandler;
 import Gossiping.GossipingHandler;
+import Server.LeaderElector;
 import Server.Server;
 import Server.ServerHandler;
 import Server.ServerState;
@@ -124,6 +125,19 @@ public class Server2ServerConnection extends Thread{
 				e.printStackTrace();
 			}
 			break;
+		case "election":
+			String electionMsgType = response.getString("electionMsgType");
+			switch(electionMsgType){
+				case "start_election":
+				try {
+					LeaderElector.processStartElectionMsg(response);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				break;
+
+			}
 		
 		}
 		
