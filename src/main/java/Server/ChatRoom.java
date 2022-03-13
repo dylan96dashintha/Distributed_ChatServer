@@ -16,7 +16,7 @@ public class ChatRoom {
 	private String owner;
 	private ConcurrentLinkedQueue<User> userListInRoom;
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
-	
+	public ConcurrentHashMap<String, String> otherServersChatRooms;
 	public ConcurrentLinkedQueue<User> getUserListInRoom() {
 		return userListInRoom;
 	}
@@ -43,6 +43,10 @@ public class ChatRoom {
 		this.userListInRoom = new ConcurrentLinkedQueue<User>();
 	}
 	
+	public void setChatRoomHashMap(ConcurrentHashMap<String, ChatRoom> chatRoomHashMap) {
+		this.chatRoomHashMap = chatRoomHashMap;
+	}
+
 	public boolean createChatRoom(String roomName, String owner) {
 		this.roomName = roomName;
 		this.owner = owner;
@@ -72,9 +76,10 @@ public class ChatRoom {
 	}
 	
 	public boolean isUnique() {
-		//TODO
+		//TODO - Done
 		//Get the global chatroomhashmap and check the uniqueness
-		if (chatRoomHashMap.containsKey(roomName)) {
+		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+		if (chatRoomHashMap.containsKey(roomName) || otherServersChatRooms.containsKey(roomName)) {
 			return false;
 		} else {
 			return true;

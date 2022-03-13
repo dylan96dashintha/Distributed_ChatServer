@@ -1,5 +1,10 @@
 package Messaging;
 
+import Gossiping.GossipingHandler;
+import Server.Server;
+
+import Server.ServerState;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -10,10 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
-import Gossiping.GossipingHandler;
-import Server.Server;
 
-import Server.ServerState;
 
 public class LeaderChannel {
 
@@ -41,8 +43,10 @@ public class LeaderChannel {
 			int c = 0;
 			while ((!(ServerState.getServerState().checkChatRoomRequestCompleted(id))) || c>20) {
 				try {
+					logger.debug("in loop");
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
+					logger.debug(c);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -76,7 +80,7 @@ public class LeaderChannel {
 	}
 	
 	public static boolean updateGlobalIdentities() {
-
+		logger.debug("in updateGlobalIdentities");
 		ServerState currentServer = ServerState.getServerState();
 		Server leaderServer = currentServer.getServerByName(currentServer.getLeaderServer().getServerName());
 		if (currentServer.getServerName().equals(currentServer.getLeaderServer().getServerName())) {
@@ -95,10 +99,12 @@ public class LeaderChannel {
 				return false;
 			}
 			int c = 0;
-			while ((!(ServerState.getServerState().checkIdentityRequestCompleted(id))) || c>20) {
+			while ((!(ServerState.getServerState().checkIdentityRequestCompleted(id))) && c<20) {
 				try {
+					logger.debug("in loop");
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
+					logger.debug(c);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

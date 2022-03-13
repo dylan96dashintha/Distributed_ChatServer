@@ -31,10 +31,9 @@ public class ServerState {
 	
 	private ConcurrentLinkedQueue<String> chatRoomsRequestIDs = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> identityRequestIDs = new ConcurrentLinkedQueue<String>();
+	private ConcurrentLinkedQueue<String> gossipingIDs = new ConcurrentLinkedQueue<String>();
 	
 	private static ServerState serverState;
-	
-
 	
 	private ConcurrentHashMap<String, Server> serversHashmap = new ConcurrentHashMap<>();
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashmap = new ConcurrentHashMap<>();
@@ -70,6 +69,23 @@ public class ServerState {
 		serversHashmap.put("s1", new Server("s1", "localhost",  5555,4444));
 		serversHashmap.put("s2", new Server("s2", "localhost",  5556, 4445));
 		serversHashmap.put("s3", new Server("s3", "localhost",  5557,4446));
+		
+		if (serverName.equals("s1")) {
+			//for testing
+			otherServersChatRooms.put("my-room1", "s2");
+			otherServersChatRooms.put("my-room2", "s2");
+			otherServersChatRooms.put("my-room3", "s3");
+			otherServersChatRooms.put("my-room4", "s3");
+			otherServersChatRooms.put("my-room5", "s2");
+			
+			otherServersUsers.put("user1", "s2");
+			otherServersUsers.put("user2", "s2");
+			otherServersUsers.put("user3", "s3");
+			otherServersUsers.put("user4", "s2");
+			otherServersUsers.put("user5", "s3");
+			otherServersUsers.put("user6", "s3");
+			//for testing end
+		}
 
 		
 		for (ConcurrentHashMap.Entry<String,Server> e : serversHashmap.entrySet()) {
@@ -79,13 +95,7 @@ public class ServerState {
 				this.clientPort = e.getValue().getClientPort();
 				this.serverPort = e.getValue().getServerPort();
 				
-				//for testing
-				otherServersChatRooms.put("my-room1", "s2");
-				otherServersChatRooms.put("my-room2", "s2");
-				otherServersChatRooms.put("my-room3", "s3");
-				otherServersChatRooms.put("my-room4", "s3");
-				otherServersChatRooms.put("my-room5", "s2");
-				//for testing end
+
 			}
 		}
 		
@@ -208,7 +218,17 @@ public class ServerState {
 	}
 	
 	public void addIdentityRequesID(String id) {
-		this.chatRoomsRequestIDs.add(id);
+		this.identityRequestIDs.add(id);
+	}
+	
+	public boolean isGossipingIDContains(String id) {
+		if (this.gossipingIDs == null)
+			return false;
+		return this.gossipingIDs.contains(id);
+	}
+	
+	public void addGossipingID(String id) {
+		this.gossipingIDs.add(id);
 	}
 
 
