@@ -33,6 +33,7 @@ public class ClientHandler {
 	protected ChatRoom chatRoom;
 	protected String serverId;
 	public GossipingHandler gossipingHandle;
+	public ConcurrentHashMap<String, String> otherServersChatRooms;
 	public ClientHandler(Socket socket) {
 		
 		this.socket = socket;
@@ -42,6 +43,7 @@ public class ClientHandler {
 		mainHall = chatRoomMainHall.getRoomName();
 		chatRoom = new ChatRoom();
 		gossipingHandle = new GossipingHandler();
+		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		
 	}
 	
@@ -58,7 +60,7 @@ public class ClientHandler {
 			JSONObject roomChangeResNewIdentity = null;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
-				logger.debug("new identity22  ::  "+newIdentity.getName());
+				logger.debug("new identity  ::  "+newIdentity.getName());
 				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
 				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
 				newIdentity.getUserList().getUser().setRoomName(mainHall);
@@ -101,8 +103,11 @@ public class ClientHandler {
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
-			//TODO
+			//TODO - Done
 			//Global chat rooms to be applied here
+			for (String roomNameList : otherServersChatRooms.keySet()) {
+				roomList.add(roomNameList);
+			}
 			for (ChatRoom chatRoom: chatRoomHashMap.values()) {
 				roomList.add(chatRoom.getRoomName());
 			}
@@ -157,6 +162,7 @@ public class ClientHandler {
 					
 					chatRoomHashMap.put(roomId, chatRoom);
 					chatRoom.setChatRoomHashMap(chatRoomHashMap);
+					ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 					try {
 						gossipingHandle.sendChatRoomCreateGossip();
 					} catch (IOException e2) {
