@@ -30,7 +30,12 @@ public class LeaderElector {
         JSONObject startElectionMsg = LeaderElector.createElectionMessage("start_election", LeaderElector.currentServer);
         for (Server server: Servers){
             if ((server.getServerName()).compareTo(currentServer.getServerName())>0){
-                sendElectionMessage(server,startElectionMsg);
+                try {
+                    sendElectionMessage(server,startElectionMsg);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
         //thread2
@@ -51,11 +56,17 @@ public class LeaderElector {
         else{
             maxServer = currentServer;
         }
-           
+        JSONObject nominateMsg = LeaderElector.createElectionMessage("nomination", LeaderElector.currentServer);
+        try {
+            sendElectionMessage(maxServer, nominateMsg);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         //nominate that server
         availableServers.clear();//reset availableServers
         LeaderElector.currentLeader = maxServer;
-        leaderStatus = true; //set laeder and leaderstatus
+        // leaderStatus = true; //set laeder and leaderstatus
     }
 
     public static void processStartElectionMsg(JSONObject response){
@@ -71,11 +82,28 @@ public class LeaderElector {
     }
 
     public static void processAnswerElectionMsg(JSONObject response){
-        
+        String senderServerName = response.getString("senderServerName");
+        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        availableServers.add(senderServer);    
     }
 
-    public static void getElectionRequest(Server electionStarter){
-        // electionStarter.sendElectionResponse(this.currentServer.serverid);
+    public static void processNominationMsg(JSONObject response){
+        LeaderElector.currentLeader = currentServer;
+        JSONObject informCoordinatorMsg = LeaderElector.createElectionMessage("inform_coordinator", LeaderElector.currentServer);
+        for (Server server: availableServers){
+            try {
+                sendElectionMessage(server, informCoordinatorMsg);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void processInformCoordinatorMsg(JSONObject response){
+        String senderServerName = response.getString("senderServerName");
+        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        LeaderElector.currentLeader = senderServer;   
     }
 
     public static void getNomination(){
@@ -100,7 +128,7 @@ public class LeaderElector {
     // 1. start_election
     // 2. answer_election
     // 3. nomination
-    // 4. coordinator
+    // 4. inform_coordinator
     // 5. IamUp
     // 6. view
 

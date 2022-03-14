@@ -129,14 +129,19 @@ public class Server2ServerConnection extends Thread{
 			String electionMsgType = response.getString("electionMsgType");
 			switch(electionMsgType){
 				case "start_election":
-				try {
 					LeaderElector.processStartElectionMsg(response);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				break;
+					break;
 
+				case "answer_election":
+					LeaderElector.processAnswerElectionMsg(response);
+					break;
+
+				case "nomination":
+					LeaderElector.processNominationMsg(response);
+					break;
+
+				case "inform_coordinator":
+					LeaderElector.processInformCoordinatorMsg(response);
 			}
 		
 		}
