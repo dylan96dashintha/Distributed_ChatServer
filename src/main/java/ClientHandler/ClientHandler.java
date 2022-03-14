@@ -103,7 +103,7 @@ public class ClientHandler {
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
-			//TODO- Done
+			//TODO - Done
 			//Global chat rooms to be applied here
 			for (String roomNameList : otherServersChatRooms.keySet()) {
 				roomList.add(roomNameList);
