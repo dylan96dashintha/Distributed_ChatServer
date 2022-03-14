@@ -209,6 +209,8 @@ public class ClientHandler {
 			String identityJoinRoom = newIdentity.getName();
 			JSONObject joinRoomRes;
 			JSONObject joinRoomUnsuccessRes;
+			String formerRoomJoinRoom = newIdentity.getUserList().getUser().getRoomName();
+			
 			boolean isRoomChangeSuccess = true;
 			if (chatRoomHashMap.containsKey(roomIdJoinRoom)) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdJoinRoom);
@@ -216,17 +218,41 @@ public class ClientHandler {
 				if (!owner.equals(identityJoinRoom)) {
 					chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
-					joinRoomRes = changeRoom(identityJoinRoom, mainHall, roomIdJoinRoom);
+					joinRoomRes = changeRoom(identityJoinRoom, formerRoomJoinRoom, roomIdJoinRoom);
 					newIdentity.getUserList().getUser().setRoomName(roomIdJoinRoom);
+					
 					logger.debug("JoinRoom :: "+joinRoomRes);
 					//TODO
 					//send the joinRoomRes to members of the former chat room, members  of the new chat room, and to the client
+					
+					
+					String username = newIdentity.getUserList().getUser().getName();
+					
 					try {
+						
+						//send new join message to former chat room
+						logger.debug("formerRoomJoinRoom :: "+formerRoomJoinRoom);
+						Sender.sendNotificationChatroom(formerRoomJoinRoom, joinRoomRes,username);
+						
+						
+						//send new join message to new chat room
+						logger.debug("roomIdJoinRoom :: "+roomIdJoinRoom);
+						Sender.sendNotificationChatroom(roomIdJoinRoom, joinRoomRes,username);
+						
 						Sender.sendRespond(socket, joinRoomRes);
+						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					
+					
+					
+					
+					
+					
+					
+					
 					
 				} else {
 					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
