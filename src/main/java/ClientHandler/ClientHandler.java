@@ -144,6 +144,7 @@ public class ClientHandler {
 			String roomId = jsnObj.getString("roomid");
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
+			String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
 			if (!roomId.equals("MainHall")) {
 				logger.debug("new identity  ::  "+identityName+" Room id :: "+roomId);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
@@ -178,9 +179,10 @@ public class ClientHandler {
 					}
 					//TODO - Done
 					//Broadcast roomchange message to teh clients that are members of the chat room
-					String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
+
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
-					
+					chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomName);
+					chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomId);
 					try {
 						Sender.sendMessageChatroom(formerRoomName, createRoomRoomChangeRes);
 						
@@ -240,6 +242,8 @@ public class ClientHandler {
 						Sender.sendNotificationChatroom(roomIdJoinRoom, joinRoomRes,username);
 						
 						Sender.sendRespond(socket, joinRoomRes);
+						chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
+						
 						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -296,11 +300,13 @@ public class ClientHandler {
 				//TODO
 				//broadcast the message to the all the users in new room
 				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
+				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
 			} else {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
 				//TODO
 				//broadcast the message to the all the users in mainHall
 				newIdentity.getUserList().getUser().setRoomName(mainHall);
+				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
 			}
 			
 			serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type", "serverchange");
