@@ -102,6 +102,7 @@ public class ChatRoom {
 	
 	public void joinRoom(User user) {
 		userListInRoom.add(user);
+		
 	}
 	
 	public ConcurrentLinkedQueue<User> deleteRoom(String chatRoom) {
@@ -135,5 +136,28 @@ public class ChatRoom {
 	public void addUsersToMainHall(User user) {
 		ChatRoom chatRoom = chatRoomHashMap.get("MainHall");
 		chatRoom.joinRoom(user);
+	}
+	
+	public void addUsersToChatRoom(User user, String roomId) {
+		ChatRoom chatRoom = chatRoomHashMap.get(roomId);
+		chatRoom.joinRoom(user);
+	}
+	
+	public void removeUsersFromChatRoom (User user, String roomId) {
+		ChatRoom chatRoom;
+		if (roomId.startsWith("MainHall")) {
+			chatRoom = chatRoomHashMap.get("MainHall");
+		} else {
+			chatRoom = chatRoomHashMap.get(roomId);	
+		}
+		ConcurrentLinkedQueue<User> userList = chatRoom.getUserListInRoom();
+		userList.remove(user);
+		chatRoom.setUserListInRoom(userList);
+	}
+
+
+
+	public void setUserListInRoom(ConcurrentLinkedQueue<User> userListInRoom) {
+		this.userListInRoom = userListInRoom;
 	}
 }
