@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class LeaderElector {
-    private static ArrayList<Server> Servers = new ArrayList<Server>();
+    private static ArrayList<Server> Servers;
     private static Server currentLeader;
     private static Server currentServer;
     private static ArrayList<Server> availableServers = new ArrayList<Server>();
@@ -178,6 +178,22 @@ public class LeaderElector {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void setServers(ArrayList<Server> Servers){
+        LeaderElector.Servers = Servers;
+    }
+
+    public static void setcurrentLeader(Server leader){
+        LeaderElector.currentLeader = leader;
+    }
+
+    public static void setcurrentServer(Server currentServer){
+        LeaderElector.currentServer = currentServer;
+    }
+
+    public static void setcurrentServerState(ServerState currentServerState){
+        LeaderElector.currentServerState = currentServerState;
     }
 
 }
