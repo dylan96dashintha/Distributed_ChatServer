@@ -1,6 +1,7 @@
 import java.io.*;  
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Scanner; 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -21,17 +22,47 @@ public class App
     public static void main( String[] args )
     {
     	
-    	logger.info("Stating Server");
-    	String confFilePath = "conf.txt"; 
-    	//execute with jar
-    	ServerState currentServer = ServerState.getServerState().initializeServer(args[0], confFilePath);
-    	logger.info("Command line arguments : "+ args[0]);
-    	
-//    	execute with eclips debug mode
-//    	ServerState currentServer = ServerState.getServerState().initializeServer("s1", confFilePath);
+
+    	 
+    	//execute with jar    	
+    	String serverName = args[0];
+    	String confFilePath = args[1];
+//    	
+    	//execute with eclips   	
+//    	String serverName = "s1";
+//    	String confFilePath = "conf.txt"; 	    	
     	
 
     	
+    	logger.info("Starting Server "+ serverName);
+    	boolean iterate = true;
+    	ArrayList<String> configuration = new ArrayList<String>();
+    	while(iterate) {
+    		logger.debug("Running Loop");
+    		try {
+    			File file = new File(confFilePath);
+    			Scanner reader= new Scanner(file);
+    			while (reader.hasNextLine()) {
+    		        String[] data = reader.nextLine().split("\t");
+    		        configuration.add(new JSONObject()
+    		        			.put("server-name", data[0])
+    		        			.put("address", data[1])
+    		        			.put("client-port", data[2])
+    		        			.put("server-port", data[3])
+    		        			.toString());
+    		     }
+    			reader.close();
+    			iterate = false;
+    			logger.debug("File reading finished");
+    		} catch (FileNotFoundException e1) {
+    			iterate = false;
+    			logger.info("No such file in " + confFilePath + " file path");
+    			System.exit(0);
+    		}    
+    	}
+    	
+    	ServerState currentServer = ServerState.getServerState().initializeServer(serverName, configuration);	
+	
     	//create server connection    	
     	Thread server2serverListingThread = new Thread() {
     		public void run() {
