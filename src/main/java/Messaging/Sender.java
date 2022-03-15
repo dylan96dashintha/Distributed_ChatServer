@@ -43,4 +43,32 @@ public class Sender {
 		
 		
 	}
+	
+	
+	public static void sendNotificationChatroom(String chatRoomName, JSONObject jsonObj,String username) throws IOException {
+		
+		
+		
+		ChatRoom chatRoom = new ChatRoom();
+	
+		ConcurrentLinkedQueue <User> UserList = chatRoom.getUserListInRoom(chatRoomName);
+		
+		
+		   for(User user: UserList)
+		   {
+			   logger.debug("sendMessageFormerChatroom ::  "+chatRoomName+jsonObj+(user.getName()).equals(username)+user.getName()+username);
+			   if (!(user.getName()).equals(username)) {
+					DataOutputStream opStream = new DataOutputStream(user.getUserSocket().getOutputStream());
+					opStream.write((jsonObj.toString()+ "\n").getBytes(StandardCharsets.UTF_8));
+					opStream.flush();
+			   }
+			   
+		   }
+		
+		
+	}
+	
+	
+	
+	
 }
