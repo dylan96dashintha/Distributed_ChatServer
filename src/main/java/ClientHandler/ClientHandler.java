@@ -334,7 +334,11 @@ public class ClientHandler {
 			} else {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
 				// TODO
-				// broadcast the message to the all the users in mainHall
+				// broadcast the message to the all the users in mainHall				
+				newIdentity.getUserList().getUser().setRoomName(mainHall);
+				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
+				moveJoinSendMsg(mainHall);
+				
 				try {
 					Sender.sendMessageChatroom(mainHall, moveJoinRes);
 					
@@ -342,9 +346,6 @@ public class ClientHandler {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				newIdentity.getUserList().getUser().setRoomName(mainHall);
-				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
-				moveJoinSendMsg(mainHall);
 			}
 
 			break;
