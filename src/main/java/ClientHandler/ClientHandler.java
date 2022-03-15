@@ -319,23 +319,25 @@ public class ClientHandler {
 				chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, roomIdMoveJoin);
 				// TODO
-				// broadcast the message to the all the users in new room
+
+				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
+				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
+				
+				moveJoinSendMsg(roomIdMoveJoin);
 				try {
 					Sender.sendMessageChatroom(roomIdMoveJoin, moveJoinRes);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-
 				}
-				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
-				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
-				moveJoinSendMsg(roomIdMoveJoin);
+				
 			} else {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
 				// TODO
 				// broadcast the message to the all the users in mainHall
 				try {
 					Sender.sendMessageChatroom(mainHall, moveJoinRes);
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
