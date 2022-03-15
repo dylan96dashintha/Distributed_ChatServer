@@ -18,7 +18,15 @@ public class LeaderElector {
 	}
 
     //need review
-    public static Server getLeader(Server currentServer){
+    public static Server getLeader(){
+        currentServerState = ServerState.getServerState();
+
+        Servers.clear();
+        Servers.addAll(currentServerState.getServersHashmap().values());
+
+        String serverName = currentServerState.getServerName();
+        currentServer = currentServerState.getServerByName(serverName);
+        
         selectNewLeader();
         return currentLeader;
     }
