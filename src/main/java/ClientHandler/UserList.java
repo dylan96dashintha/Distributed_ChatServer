@@ -74,7 +74,15 @@ public class UserList {
 	public boolean removeUser(User user) {
 		if (identityList.contains(user)) {
 			identityList.remove(user);
-			return true;
+			ServerState.getServerState().setIdentityList(identityList);
+			try {
+				gossipingHandle.sendNewIdentityGossip();
+				return true;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
 		} else {
 			return false;
 		}
