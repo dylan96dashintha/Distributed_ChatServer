@@ -7,11 +7,12 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.json.JSONObject;
+
 import ClientHandler.ClientHandler;
 import ClientHandler.User;
 import Connection.Server2ServerConnection;
@@ -29,10 +30,14 @@ public class ServerState {
 	
 //	private Server currentServer;
 	private Server leaderServer;
+	private AtomicBoolean ongoingConsensus = new AtomicBoolean(false);
 	
 	private ConcurrentLinkedQueue<String> chatRoomsRequestIDs = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> identityRequestIDs = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> gossipingIDs = new ConcurrentLinkedQueue<String>();
+	private final ConcurrentHashMap<String, Integer> heartbeatCountList = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, String> suspectList = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
 	
 	private static ServerState serverState;
 	
@@ -213,7 +218,30 @@ public class ServerState {
 	public void addGossipingID(String id) {
 		this.gossipingIDs.add(id);
 	}
+	
+	public ConcurrentHashMap<String, Integer> getHeartbeatCountList() {
+		return heartbeatCountList;
+	}
+	
+    public synchronized void removeServerInCountList(String serverName) {
+        heartbeatCountList.remove(serverName);
+    }
+    
+    public synchronized void removeServerInSuspectList(String serverName) {
+        suspectList.remove(serverName);
+    }
 
+    public ConcurrentHashMap<String, String> getSuspectList() {
+        return suspectList;
+    }
+    
+    public AtomicBoolean onGoingConsensus() {
+        return ongoingConsensus;
+    }
+    
+    public ConcurrentHashMap<String, Integer> getVoteSet() {
+        return voteSet;
+    }
 
 	public void createServer2ServerConnection() {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {

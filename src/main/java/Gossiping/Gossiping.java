@@ -159,6 +159,7 @@ public class Gossiping {
 		ArrayList<Server> randomServers = getRandomServers();
 		for (Server server : randomServers) {
 			Sender.sendRespond(server.getServerSocketConnection(), obj);
+			logger.debug("json : "+ obj.toString() + "sent to ["+ server.getServerName() + "]");
 		}
 	}
 
@@ -187,4 +188,11 @@ public class Gossiping {
 		return randomServers;
 
 	}
+
+	public void sendServerBroadcast(JSONObject obj, ArrayList<Server> serverList) throws IOException {
+        for (Server server : serverList) {
+        	Sender.sendRespond(server.getServerSocketConnection(), obj);
+        	logger.debug("send server broadcast: "+server.getServerName());
+        }
+    }
 }

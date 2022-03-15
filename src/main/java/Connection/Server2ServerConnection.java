@@ -17,6 +17,8 @@ import org.json.JSONObject;
 import ClientHandler.ClientHandler;
 import Gossiping.GossipingHandler;
 import Server.LeaderElector;
+import Heartbeat.ConsensusJob;
+import Heartbeat.GossipJob;
 import Server.Server;
 import Server.ServerHandler;
 import Server.ServerState;
@@ -150,7 +152,23 @@ public class Server2ServerConnection extends Thread{
 					LeaderElector.processViewMsg(response);
 			}
 		
+		case "heartbeat-gossip":
+			GossipJob.receiveMessages(response);
+			break;
+			
+		case "startVote":
+			ConsensusJob.startVoteMessageHandler(response);
+			break;
+			
+		case "answervote":
+			ConsensusJob.answerVoteHandler(response);
+			break;
+			
+		case "notifyserverdown":
+			ConsensusJob.notifyServerDownMessageHandler(response);
+			break;
 		}
+		
 		
 		
 	}

@@ -72,11 +72,7 @@ public class ServerHandler {
 		ServerState.getServerState().setOtherServersChatRooms(rooms);
 		ServerState.getServerState().addChatRoomRequestID(response.getString("id"));
 	}
-	
-	
-	
-	
-	
+
 	public void getGlobalIdentities(Socket socket, JSONObject response) throws IOException {
 		JSONObject msg = new JSONObject();
 		msg.put("type", "global-identity-response").put("id", response.getString("id"));
