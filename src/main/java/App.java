@@ -22,6 +22,7 @@ public class App
     public static void main( String[] args )
     {
     	
+
     	 
     	//execute with jar    	
     	String serverName = args[0];
@@ -31,6 +32,7 @@ public class App
 //    	String serverName = "s1";
 //    	String confFilePath = "conf.txt"; 	    	
     	
+
     	
     	logger.info("Starting Server "+ serverName);
     	boolean iterate = true;
