@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,49 +68,31 @@ public class ServerState {
 	//initialize server
 	
 
-	public ServerState initializeServer(String serverName, String confFilePath) {
-		//TODO
-		//Have to initialize server using configure file
-		//hard coded start
-		serversHashmap.put("s1", new Server("s1", "localhost",  5555,4444));
-		serversHashmap.put("s2", new Server("s2", "localhost",  5556, 4445));
-		serversHashmap.put("s3", new Server("s3", "localhost",  5557,4446));
+	public ServerState initializeServer(String serverName, ArrayList<String> conf) {
 		
-		if (serverName.equals("s1")) {
-			//for testing
-			otherServersChatRooms.put("my-room1", "s2");
-			otherServersChatRooms.put("my-room2", "s2");
-			otherServersChatRooms.put("my-room3", "s3");
-			otherServersChatRooms.put("my-room4", "s3");
-			otherServersChatRooms.put("my-room5", "s2");
-			
-			otherServersUsers.put("user1", "s2");
-			otherServersUsers.put("user2", "s2");
-			otherServersUsers.put("user3", "s3");
-			otherServersUsers.put("user4", "s2");
-			otherServersUsers.put("user5", "s3");
-			otherServersUsers.put("user6", "s3");
-			//for testing end
-		}
-
-		
-		for (ConcurrentHashMap.Entry<String,Server> e : serversHashmap.entrySet()) {
-			if(e.getKey().equals(serverName)) {
+		for (String serverConf: conf) {
+			JSONObject server = new JSONObject(serverConf);
+			serversHashmap.put(server.getString("server-name"), new Server(
+																		server.getString("server-name"),
+																		server.getString("address"),
+																		server.getInt("server-port"),	
+																		server.getInt("client-port")));
+			if(server.getString("server-name").equals(serverName)) {
 				this.serverName = serverName;
-				this.serverAddress = e.getValue().getServerAddress();
-				this.clientPort = e.getValue().getClientPort();
-				this.serverPort = e.getValue().getServerPort();
-				
-
+				this.serverAddress = server.getString("address");
+				this.clientPort = server.getInt("client-port");
+				this.serverPort = server.getInt("server-port");
 			}
+			
+			if(server.getString("server-name").equals("s1")) {
+				this.leaderServer = new Server(server.getString("server-name"), 
+											server.getString("address"), 
+											server.getInt("server-port"),
+											server.getInt("client-port") );
+			}
+			
 		}
-		
-//		initial leader server is s1		
-		this.leaderServer = new Server("s1", "localhost", 5555,4444 );		
-		
-		//hard coded end
-		
-		
+	
 		//create a mainhall room
 		String mainHall = "MainHall-"+this.serverName;
 		ChatRoom chatRoom = new ChatRoom();

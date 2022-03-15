@@ -10,6 +10,7 @@ public class Server {
 
 	private String serverName;
 	private String serverAddress;
+	private Integer serverId;
 	private int serverPort, clientPort;
 	
 	private Socket serverSocketConnection;
@@ -41,6 +42,9 @@ public class Server {
 	}
 	public int getClientPort() {
 		return clientPort;
+	}
+	public int getServerId(){
+		return serverId;
 	}
 	public void setClientPort(int clientPort) {
 		this.clientPort = clientPort;

@@ -32,6 +32,8 @@ public class ClientHandler {
 	String identityName;
 	protected ChatRoom chatRoom;
 	protected String serverId;
+	public GossipingHandler gossipingHandle;
+	public ConcurrentHashMap<String, String> otherServersChatRooms;
 	public ClientHandler(Socket socket) {
 		
 		this.socket = socket;
@@ -40,6 +42,8 @@ public class ClientHandler {
 		ChatRoom chatRoomMainHall = chatRoomHashMap.get("MainHall"); 
 		mainHall = chatRoomMainHall.getRoomName();
 		chatRoom = new ChatRoom();
+		gossipingHandle = new GossipingHandler();
+		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		
 	}
 	
@@ -53,10 +57,10 @@ public class ClientHandler {
 			newIdentity = new NewIdentity(identityName, socket);
 			boolean isApproved = newIdentity.validation();
 			JSONObject res;
-			JSONObject roomChangeResNewIdentity;
+			JSONObject roomChangeResNewIdentity = null;
 			if (isApproved) {
 				res = new JSONObject().put("approved", "true").put("type", "newidentity");
-				logger.debug("new identity22  ::  "+newIdentity.getName());
+				logger.debug("new identity  ::  "+newIdentity.getName());
 				roomChangeResNewIdentity = changeRoom(newIdentity.getName(), "", mainHall);
 				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
 				newIdentity.getUserList().getUser().setRoomName(mainHall);
@@ -71,6 +75,7 @@ public class ClientHandler {
 				if (isApproved) {
 					//TODO- Messaging
 					//Broadcast roomChangeResNewIdentity to all the users in MainHall including the connecting clientS
+					Sender.sendMessageChatroom(mainHall, roomChangeResNewIdentity);
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -82,14 +87,27 @@ public class ClientHandler {
 			String content = jsnObj.getString("content");
 			String identityMessage = newIdentity.getName();
 			JSONObject messageRes = new JSONObject().put("content", content).put("identity", identityMessage).put("type", "message");
-			//TODO
+			
+			//TODO-done
 			//broadcast the messageRes to all the users in the room
+			String roomIdTypeMessage = newIdentity.getUserList().getUser().getRoomName();
+			
+			try {
+				Sender.sendMessageChatroom(roomIdTypeMessage, messageRes);
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+			
 			break;
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
-			//TODO
+			//TODO - Done
 			//Global chat rooms to be applied here
+			for (String roomNameList : otherServersChatRooms.keySet()) {
+				roomList.add(roomNameList);
+			}
 			for (ChatRoom chatRoom: chatRoomHashMap.values()) {
 				roomList.add(chatRoom.getRoomName());
 			}
@@ -126,8 +144,9 @@ public class ClientHandler {
 			String roomId = jsnObj.getString("roomid");
 			JSONObject createRoomRes;
 			JSONObject createRoomRoomChangeRes;
+			String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
 			if (!roomId.equals("MainHall")) {
-				logger.debug("new identity  ::  "+identityName);
+				logger.debug("new identity  ::  "+identityName+" Room id :: "+roomId);
 				boolean isRoomApproved = chatRoom.createChatRoom(roomId, newIdentity.getName());
 				if (isRoomApproved) {
 					logger.debug("Approved");
@@ -143,22 +162,45 @@ public class ClientHandler {
 //					}
 					
 					chatRoomHashMap.put(roomId, chatRoom);
+					chatRoom.setChatRoomHashMap(chatRoomHashMap);
+					ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
+					try {
+						gossipingHandle.sendChatRoomCreateGossip();
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 					createRoomRes = new JSONObject().put("approved", "true").put("roomid", roomId).put("type", "createroom");
 					try {
-						logger.info("createroom :: createRoomRes :: "+ createRoomRes);
 						Sender.sendRespond(socket, createRoomRes);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					//TODO
+					//TODO - Done
 					//Broadcast roomchange message to teh clients that are members of the chat room
-					//Check former_room name
+
+					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
+					chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomName);
+					chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomId);
+					try {
+						Sender.sendMessageChatroom(formerRoomName, createRoomRoomChangeRes);
+						
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					
-					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), "former_room", roomId);
 					newIdentity.getUserList().getUser().setRoomName(roomId);
 				} else {
+					logger.debug("create room failed");
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type", "createrroom");
+					try {
+						Sender.sendRespond(socket, createRoomRes);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				
 			}
@@ -169,6 +211,8 @@ public class ClientHandler {
 			String identityJoinRoom = newIdentity.getName();
 			JSONObject joinRoomRes;
 			JSONObject joinRoomUnsuccessRes;
+			String formerRoomJoinRoom = newIdentity.getUserList().getUser().getRoomName();
+			
 			boolean isRoomChangeSuccess = true;
 			if (chatRoomHashMap.containsKey(roomIdJoinRoom)) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdJoinRoom);
@@ -176,17 +220,43 @@ public class ClientHandler {
 				if (!owner.equals(identityJoinRoom)) {
 					chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
-					joinRoomRes = changeRoom(identityJoinRoom, mainHall, roomIdJoinRoom);
+					joinRoomRes = changeRoom(identityJoinRoom, formerRoomJoinRoom, roomIdJoinRoom);
 					newIdentity.getUserList().getUser().setRoomName(roomIdJoinRoom);
+					
 					logger.debug("JoinRoom :: "+joinRoomRes);
 					//TODO
 					//send the joinRoomRes to members of the former chat room, members  of the new chat room, and to the client
+					
+					
+					String username = newIdentity.getUserList().getUser().getName();
+					
 					try {
+						
+						//send new join message to former chat room
+						logger.debug("formerRoomJoinRoom :: "+formerRoomJoinRoom);
+						Sender.sendNotificationChatroom(formerRoomJoinRoom, joinRoomRes,username);
+						
+						
+						//send new join message to new chat room
+						logger.debug("roomIdJoinRoom :: "+roomIdJoinRoom);
+						Sender.sendNotificationChatroom(roomIdJoinRoom, joinRoomRes,username);
+						
 						Sender.sendRespond(socket, joinRoomRes);
+						chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
+						
+						
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					
+					
+					
+					
+					
+					
+					
+					
 					
 				} else {
 					//joinRoomRes = new JSONObject().put("type", "roomchange").put("identity", identityJoinRoom).put("former", roomIdJoinRoom).put("roomid", roomIdJoinRoom);
@@ -230,11 +300,13 @@ public class ClientHandler {
 				//TODO
 				//broadcast the message to the all the users in new room
 				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
+				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
 			} else {
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, mainHall);
 				//TODO
 				//broadcast the message to the all the users in mainHall
 				newIdentity.getUserList().getUser().setRoomName(mainHall);
+				chatRoom.addUsersToMainHall(newIdentity.getUserList().getUser());
 			}
 			
 			serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type", "serverchange");

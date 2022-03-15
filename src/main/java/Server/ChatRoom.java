@@ -16,11 +16,18 @@ public class ChatRoom {
 	private String owner;
 	private ConcurrentLinkedQueue<User> userListInRoom;
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashMap;
-	
+	public ConcurrentHashMap<String, String> otherServersChatRooms;
 	public ConcurrentLinkedQueue<User> getUserListInRoom() {
 		return userListInRoom;
 	}
 	
+	
+	
+	public ConcurrentHashMap<String, ChatRoom> getChatRoomHashMap() {
+		return chatRoomHashMap;
+	}
+
+
 	public ConcurrentLinkedQueue<User> getUserListInRoom(String roomId) {
 		ChatRoom chatRoom;
 		if (roomId.startsWith("MainHall")) {
@@ -36,6 +43,10 @@ public class ChatRoom {
 		this.userListInRoom = new ConcurrentLinkedQueue<User>();
 	}
 	
+	public void setChatRoomHashMap(ConcurrentHashMap<String, ChatRoom> chatRoomHashMap) {
+		this.chatRoomHashMap = chatRoomHashMap;
+	}
+
 	public boolean createChatRoom(String roomName, String owner) {
 		this.roomName = roomName;
 		this.owner = owner;
@@ -65,9 +76,10 @@ public class ChatRoom {
 	}
 	
 	public boolean isUnique() {
-		//TODO
+		//TODO - Done
 		//Get the global chatroomhashmap and check the uniqueness
-		if (chatRoomHashMap.containsKey(roomName)) {
+		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+		if (chatRoomHashMap.containsKey(roomName) || otherServersChatRooms.containsKey(roomName)) {
 			return false;
 		} else {
 			return true;
@@ -90,6 +102,7 @@ public class ChatRoom {
 	
 	public void joinRoom(User user) {
 		userListInRoom.add(user);
+		
 	}
 	
 	public ConcurrentLinkedQueue<User> deleteRoom(String chatRoom) {
@@ -123,5 +136,28 @@ public class ChatRoom {
 	public void addUsersToMainHall(User user) {
 		ChatRoom chatRoom = chatRoomHashMap.get("MainHall");
 		chatRoom.joinRoom(user);
+	}
+	
+	public void addUsersToChatRoom(User user, String roomId) {
+		ChatRoom chatRoom = chatRoomHashMap.get(roomId);
+		chatRoom.joinRoom(user);
+	}
+	
+	public void removeUsersFromChatRoom (User user, String roomId) {
+		ChatRoom chatRoom;
+		if (roomId.startsWith("MainHall")) {
+			chatRoom = chatRoomHashMap.get("MainHall");
+		} else {
+			chatRoom = chatRoomHashMap.get(roomId);	
+		}
+		ConcurrentLinkedQueue<User> userList = chatRoom.getUserListInRoom();
+		userList.remove(user);
+		chatRoom.setUserListInRoom(userList);
+	}
+
+
+
+	public void setUserListInRoom(ConcurrentLinkedQueue<User> userListInRoom) {
+		this.userListInRoom = userListInRoom;
 	}
 }
