@@ -316,12 +316,13 @@ public class ClientHandler {
 			JSONObject moveJoinRes;
 			if (chatRoomHashMap.containsKey(roomIdMoveJoin)) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdMoveJoin);
+				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
 				chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, roomIdMoveJoin);
-				// TODO
+				// TODO -Done
 
-				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
-				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
+				
+				//chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
 				
 				moveJoinSendMsg(roomIdMoveJoin);
 				try {
