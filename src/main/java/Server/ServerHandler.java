@@ -103,6 +103,14 @@ public class ServerHandler {
 		ServerState.getServerState().addIdentityRequesID(response.getString("id"));
 	}
 	
+	public void deleteChatroom(JSONObject response) {
+		String chatroomToDelete = response.getString("roomid");
+		
+		ConcurrentHashMap<String, String> otherServers =  ServerState.getServerState().getOtherServersChatRooms();
+		otherServers.remove(chatroomToDelete);
+		ServerState.getServerState().setOtherServersUsers(otherServers);
+	}
+	
 	
 
 	

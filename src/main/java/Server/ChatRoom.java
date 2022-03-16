@@ -109,6 +109,7 @@ public class ChatRoom {
 		ChatRoom chatRoomBeforeDelete = chatRoomHashMap.get(chatRoom);
 		ConcurrentLinkedQueue<User> userListDeletedRoom = chatRoomBeforeDelete.getUserListInRoom();
 		chatRoomHashMap.remove(chatRoom);
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 		return userListDeletedRoom;
 		
 	}
