@@ -46,6 +46,19 @@ public class Sender {
 	}
 	
 	
+	public static void sendMessageToUserList(ConcurrentLinkedQueue<User> userList, JSONObject jsonObj)
+			throws IOException {
+
+		logger.debug("sendMessageToUserList() " + userList.toString());
+
+		for (User user : userList) {
+			DataOutputStream opStream = new DataOutputStream(user.getUserSocket().getOutputStream());
+			opStream.write((jsonObj.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+			opStream.flush();
+		}
+
+	}
+	
 	public static void sendNotificationChatroom(String chatRoomName, JSONObject jsonObj,String username) throws IOException {
 		
 		
