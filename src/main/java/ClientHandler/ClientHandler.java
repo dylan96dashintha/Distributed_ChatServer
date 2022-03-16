@@ -236,7 +236,7 @@ public class ClientHandler {
 					newIdentity.getUserList().getUser().setRoomName(roomIdJoinRoom);
 
 					logger.debug("JoinRoom :: " + joinRoomRes);
-					// TODO
+					// TODO - Done
 					// send the joinRoomRes to members of the former chat room, members of the new
 					// chat room, and to the client
 
@@ -268,7 +268,7 @@ public class ClientHandler {
 
 				}
 			} else if (otherServersChatRooms.containsKey(roomIdJoinRoom)) {
-				// TODO
+				// TODO - Done
 				// Check the global rooms of the user where he exist and reply
 				String serverId = otherServersChatRooms.get(roomIdJoinRoom);
 				Server otherServer = ServerState.getServerState().getServerByName(serverId);
@@ -317,12 +317,12 @@ public class ClientHandler {
 			JSONObject moveJoinRes;
 			if (chatRoomHashMap.containsKey(roomIdMoveJoin)) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdMoveJoin);
+				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
 				chatRoomJoinRoom.joinRoom(newIdentity.getUserList().getUser());
 				moveJoinRes = changeRoom(identityMoveJoin, formerRoomId, roomIdMoveJoin);
-				// TODO
-
-				newIdentity.getUserList().getUser().setRoomName(roomIdMoveJoin);
-				chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
+				// TODO -Done
+				
+				//chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomIdMoveJoin);
 				
 				moveJoinSendMsg(roomIdMoveJoin);
 				try {
@@ -465,6 +465,7 @@ public class ClientHandler {
 		ArrayList<JSONObject> resList = new ArrayList<>();
 		boolean isDelSuccess = true;
 		if (owner.equals(identityDelRoom)) {
+
 			ConcurrentLinkedQueue<User> userList = chatRoom.deleteRoom(roomIdDelRoom);
 			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
 			// TODO
