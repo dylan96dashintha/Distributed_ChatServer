@@ -111,7 +111,9 @@ public class ClientHandler {
 			List roomList = new ArrayList<String>();
 			// TODO - Done
 			// Global chat rooms to be applied here
+			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 			for (String roomNameList : otherServersChatRooms.keySet()) {
+				logger.debug("List :: otherserverrooms :: "+roomNameList);
 				roomList.add(roomNameList);
 			}
 			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
