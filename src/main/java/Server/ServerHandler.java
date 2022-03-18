@@ -41,6 +41,7 @@ public class ServerHandler {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
+		    
 		}else {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connection FAILED with server "+ response.getString("server"));
 		}

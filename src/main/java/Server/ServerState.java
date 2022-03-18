@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import ClientHandler.ClientHandler;
 import ClientHandler.User;
 import Connection.Server2ServerConnection;
+import Gossiping.GossipingHandler;
 import Messaging.Sender;
 
 public class ServerState {
@@ -93,7 +94,7 @@ public class ServerState {
 		ChatRoom chatRoom = new ChatRoom();
 	    chatRoom.createChatRoom(mainHall, "");
 	    chatRoomHashmap.put("MainHall", chatRoom);
-		
+
 	    createServer2ServerConnection();
 	    
 		return serverState;

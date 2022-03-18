@@ -109,6 +109,12 @@ public class ClientHandler {
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
+			try {
+				gossipingHandle.sendChatRoomCreateGossip();
+			} catch (IOException e3) {
+				// TODO Auto-generated catch block
+				e3.printStackTrace();
+			}
 			// TODO - Done
 			// Global chat rooms to be applied here
 			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
