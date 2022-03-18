@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import Server.Server;
 import org.json.JSONException;
 
@@ -369,7 +370,22 @@ public class ClientHandler {
 					e.printStackTrace();
 				}
 			}
-
+			
+			//Notify other servers
+			for (ConcurrentHashMap.Entry<String, Server> e : ServerState.getServerState().getServersHashmap().entrySet()) {
+				JSONObject obj = new JSONObject()
+						.put("type" , "deleteroom")
+						.put("serverid", ServerState.getServerState().getServerName())
+						.put("roomid", roomIdDelRoom);
+				try {
+					if (!(e.getValue().getServerName().equals(ServerState.getServerState().getServerName())))
+						Sender.sendRespond(e.getValue().getServerSocketConnection(), obj);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			
 //			
 //			JSONObject delRoomRes;
 //			JSONObject delRoomUnsucessRes;
@@ -451,12 +467,13 @@ public class ClientHandler {
 		ArrayList<JSONObject> resList = new ArrayList<>();
 		boolean isDelSuccess = true;
 		if (owner.equals(identityDelRoom)) {
-			ConcurrentLinkedQueue<User> userListDeleteRoom = chatRoom.deleteRoom(roomIdDelRoom);
-			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type","deleteroom");
+
+			ConcurrentLinkedQueue<User> userList = chatRoom.deleteRoom(roomIdDelRoom);
+			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
 			// TODO
 			// send delRoomRes to other servers
-			ConcurrentLinkedQueue<User> UserList = chatRoom.getUserListInRoom(roomIdDelRoom);
-			for (User user : UserList) {
+			
+			for (User user : userList) {
 				RoomChangeDelRoomRes = changeRoom(user.getName(), roomIdDelRoom, mainHall);
 				resList.add(RoomChangeDelRoomRes);
 				user.setRoomName(mainHall);
@@ -471,7 +488,7 @@ public class ClientHandler {
 			// RoomChangeDelRoomRes message to client of the deleted room
 			try {
 				for (JSONObject jsn : resList) {
-					Sender.sendMessageChatroom(roomIdDelRoom, jsn);
+					Sender.sendMessageToUserList(userList, jsn);
 					Sender.sendMessageChatroom(mainHall, jsn);
 				}
 
@@ -479,8 +496,7 @@ public class ClientHandler {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type",
-					"deleteroom");
+			delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
 				Sender.sendRespond(socket, delRoomClientRes);
 			} catch (IOException e) {
@@ -493,8 +509,7 @@ public class ClientHandler {
 		}
 
 		if (!isDelSuccess) {
-			delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type",
-					"deleteroom");
+			delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
 				Sender.sendRespond(socket, delRoomUnsucessRes);
 			} catch (IOException e) {
@@ -506,8 +521,7 @@ public class ClientHandler {
 	}
 
 	public void moveJoinSendMsg(String chatRoom) {
-		JSONObject serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type",
-				"serverchange");
+		JSONObject serverChangeRes = new JSONObject().put("serverid", serverId).put("approved", "true").put("type", "serverchange");
 		try {
 			logger.debug("movejoin ::15 :: socket ::" + socket);
 			Sender.sendRespond(socket, serverChangeRes);
