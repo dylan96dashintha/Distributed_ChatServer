@@ -30,11 +30,6 @@ public class App
 {
 	private static final Logger logger = LogManager.getLogger(App.class);
 	
-	private static Integer alive_interval = 3;
-	private static Integer alive_error_factor = 5;
-	private static Integer consensus_interval=10;
-    private static Integer consensus_vote_duration=5;
-	
     public static void main( String[] args )
     {
     	
@@ -181,14 +176,14 @@ public class App
             JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
                     .withIdentity(Constants.GOSSIP_JOB, "group1").build();
 
-            gossipJob.getJobDataMap().put("aliveErrorFactor", alive_error_factor);
+            gossipJob.getJobDataMap().put("aliveErrorFactor", Constants.ALIVE_ERROR_FACTOR);
 
             Trigger gossipTrigger = TriggerBuilder
                     .newTrigger()
                     .withIdentity(Constants.GOSSIP_JOB_TRIGGER, "group1")
                     .withSchedule(
                             SimpleScheduleBuilder.simpleSchedule()
-                                    .withIntervalInSeconds(alive_interval).repeatForever())
+                                    .withIntervalInSeconds(Constants.ALIVE_INTERVAL).repeatForever())
                     .build();
 
             Scheduler scheduler = new StdSchedulerFactory().getScheduler();
@@ -206,14 +201,14 @@ public class App
             JobDetail consensusJob = JobBuilder.newJob(ConsensusJob.class)
                     .withIdentity(Constants.CONSENSUS_JOB, "group1").build();
 
-            consensusJob.getJobDataMap().put("consensusVoteDuration", consensus_vote_duration);
+            consensusJob.getJobDataMap().put("consensusVoteDuration", Constants.CONSENSUS_VOTE_DURATION);
 
             Trigger consensusTrigger = TriggerBuilder
                     .newTrigger()
                     .withIdentity(Constants.CONSENSUS_JOB_TRIGGER, "group1")
                     .withSchedule(
                             SimpleScheduleBuilder.simpleSchedule()
-                                    .withIntervalInSeconds(consensus_interval).repeatForever())
+                                    .withIntervalInSeconds(Constants.CONSENSUS_INTERVAL).repeatForever())
                     .build();
 
             Scheduler scheduler = new StdSchedulerFactory().getScheduler();

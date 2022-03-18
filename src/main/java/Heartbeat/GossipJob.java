@@ -20,8 +20,6 @@ public class GossipJob implements Job{
 	
 	private static final Logger logger = LogManager.getLogger(GossipJob.class);
 	
-	private ServerState serverState = ServerState.getServerState();
-    private Server leaderState = serverState.getLeaderServer();
     private ServerMessage serverMessage = ServerMessage.getInstance();
     private Gossiping gossiping = new Gossiping();
 	
@@ -29,37 +27,39 @@ public class GossipJob implements Job{
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
     	JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-        String aliveErrorFactor = dataMap.get("aliveErrorFactor").toString(); //TODO : what is aliveErrorFactor
+        String aliveErrorFactor = dataMap.get("aliveErrorFactor").toString();
 
         // first work on heart beat vector and suspect failure server list
-        for (Server serverInfo : serverState.getServersHashmap().values()){
+        for (Server serverInfo : ServerState.getServerState().getServersHashmap().values()){
             String serverId = serverInfo.getServerName();
-            String myServerId = serverState.getServerName();
+            String myServerId = ServerState.getServerState().getServerName();
 
             // get current heart beat count of a server
-            Integer count = serverState.getHeartbeatCountList().get(serverId);
-
+            Integer count = ServerState.getServerState().getHeartbeatCountList().get(serverId);
+            logger.info("before count of "+ serverId + " : " + count);
+            
             // first update heart beat count vector
             if (serverId.equals(myServerId)) {
-                serverState.getHeartbeatCountList().put(serverId, 0); // reset my own vector always
+            	ServerState.getServerState().getHeartbeatCountList().put(serverId, 0); // reset my own vector always
             } else {
                 // up count all others
                 if (count == null) {
-                    serverState.getHeartbeatCountList().put(serverId, 1);
+                	ServerState.getServerState().getHeartbeatCountList().put(serverId, 1);
                 } else {
-                    serverState.getHeartbeatCountList().put(serverId, count + 1);
+                	ServerState.getServerState().getHeartbeatCountList().put(serverId, count + 1);
                 }
             }
 
             // FIX get the fresh updated current count again
-            count = serverState.getHeartbeatCountList().get(serverId);
+            count = ServerState.getServerState().getHeartbeatCountList().get(serverId);
+            logger.info("after count of "+ serverId + " : " + count);
 
             if (count != null) {
                 // if heart beat count is more than error factor
                 if (count > Integer.parseInt(aliveErrorFactor)) {
-                    serverState.getSuspectList().put(serverId, "SUSPECTED");
+                	ServerState.getServerState().getSuspectList().put(serverId, "SUSPECTED");
                 } else {
-                    serverState.getSuspectList().put(serverId, "NOT_SUSPECTED");
+                	ServerState.getServerState().getSuspectList().put(serverId, "NOT_SUSPECTED");
                 }
             }
 
@@ -82,7 +82,7 @@ public class GossipJob implements Job{
 
         // finally gossip about heart beat vector to a next peer
 
-        int numOfServers = serverState.getServersHashmap().size();
+        int numOfServers = ServerState.getServerState().getServersHashmap().size();
 
         if (numOfServers > 1) { // Gossip required at least 2 servers to be up
         	
@@ -99,10 +99,11 @@ public class GossipJob implements Job{
             //Collections.shuffle(remoteServer, new Random(System.nanoTime())); // another way of randomize the list
 
             // change concurrent hashmap to hashmap before sending
-            HashMap<String, Integer> heartbeatCountList = new HashMap<>(serverState.getHeartbeatCountList());
+            HashMap<String, Integer> heartbeatCountList = new HashMap<>(ServerState.getServerState().getHeartbeatCountList());
             JSONObject gossipMessage = new JSONObject();
-            gossipMessage = serverMessage.gossipMessage(serverState.getServerName(), heartbeatCountList);
+            gossipMessage = serverMessage.gossipMessage(ServerState.getServerState().getServerName(), heartbeatCountList);
             try {
+            	logger.debug("checking.....");
             	gossiping.spreadGossipMsg(gossipMessage);
 //                MessageTransfer.sendServer(gossipMessage,remoteServer.get(serverIndex));
             	logger.debug("send heartbeatcount for two servers are starting");
@@ -110,14 +111,10 @@ public class GossipJob implements Job{
             	logger.error("send heartbeatcount is failed : " + e);
 //                System.out.println("WARN : Server s"+remoteServer.get(serverIndex).getServerID() + " has failed");
             }
-
         }
-		
 	}
     
     public static void receiveMessages(JSONObject j_object) {
-
-        ServerState serverState = ServerState.getServerState();
 
         HashMap<String, Integer> gossipFromOthers = (HashMap<String, Integer>) j_object.get("heartbeatCountList");
         String fromServer = (String)j_object.get("serverId");
@@ -126,20 +123,20 @@ public class GossipJob implements Job{
 
         //update the heartbeatcountlist by taking minimum
         for (String serverId : gossipFromOthers.keySet()) {
-            Integer localHeartbeatCount = serverState.getHeartbeatCountList().get(serverId);
+            Integer localHeartbeatCount = ServerState.getServerState().getHeartbeatCountList().get(serverId);
             Integer remoteHeartbeatCount = (Integer) gossipFromOthers.get(serverId);
             if (localHeartbeatCount != null && remoteHeartbeatCount < localHeartbeatCount) {
-                serverState.getHeartbeatCountList().put(serverId, remoteHeartbeatCount);
+            	ServerState.getServerState().getHeartbeatCountList().put(serverId, remoteHeartbeatCount);
             }
         }
 
-        logger.info("Current cluster heart beat state is: " + serverState.getHeartbeatCountList());
+        logger.info("Current cluster heart beat state is: " + ServerState.getServerState().getHeartbeatCountList());
 
-        if (serverState.getLeaderServer().isLeaderElected() && serverState.getLeaderServer().getServerName().equals(serverState.getServerName())) { //TODO : isLeaderElected yet to be implemented
-            if (serverState.getHeartbeatCountList().size() < gossipFromOthers.size()) {
+        if (ServerState.getServerState().isLeaderElected() && ServerState.getServerState().getLeaderServer().getServerName().equals(ServerState.getServerState().getServerName())) {
+            if (ServerState.getServerState().getHeartbeatCountList().size() < gossipFromOthers.size()) {
                 for (String serverId : gossipFromOthers.keySet()) {
-                    if (!serverState.getHeartbeatCountList().containsKey(serverId)) {
-                        serverState.getSuspectList().put(serverId, "SUSPECTED");
+                    if (!ServerState.getServerState().getHeartbeatCountList().containsKey(serverId)) {
+                    	ServerState.getServerState().getSuspectList().put(serverId, "SUSPECTED");
                     }
                 }
             }

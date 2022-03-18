@@ -189,9 +189,14 @@ public class Gossiping {
 
 	}
 
-	public void sendServerBroadcast(JSONObject obj, ArrayList<Server> serverList) throws IOException {
+	public void sendServerBroadcast(JSONObject obj, ArrayList<Server> serverList){
         for (Server server : serverList) {
-        	Sender.sendRespond(server.getServerSocketConnection(), obj);
+        	try {
+				Sender.sendRespond(server.getServerSocketConnection(), obj);
+			} catch (IOException e) {
+				logger.debug("sendServerBroadcast is failed, Json of : "+ obj + " to : "+ server.getServerName());
+				ServerState.getServerState().getSuspectList().put(server.getServerName(), "SUSPECTED");
+			}
         	logger.debug("send server broadcast: "+server.getServerName());
         }
     }

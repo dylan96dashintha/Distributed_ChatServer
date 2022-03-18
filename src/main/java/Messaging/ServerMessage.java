@@ -2,8 +2,11 @@ package Messaging;
 
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
+
+import Server.Server;
 
 public class ServerMessage {
 	
@@ -54,4 +57,21 @@ public class ServerMessage {
         jsonObject.put("vote", vote);
         return jsonObject;
     }
+
+    public static JSONObject heartbeatMessage(String sender) {
+        // {"option": "heartbeat", "sender": "s1"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "heartbeat");
+        jsonObject.put("sender", sender);
+        return jsonObject;
+    }
+
+	public static JSONObject startElectionRequestMessage(Server server, ConcurrentHashMap<String, Boolean> electionStatusHashMap) {
+		// {"option": "electionProgressUpdate", "electionStatusHashMap": {"s1":false,"s2":false,"s3":true,"s4":false}}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "electionProgressUpdate");
+        jsonObject.put("newLeader", server);
+        jsonObject.put("electionStatusHashMap", electionStatusHashMap);
+        return jsonObject;
+	}
 }

@@ -19,6 +19,7 @@ import Gossiping.GossipingHandler;
 import Server.LeaderElector;
 import Heartbeat.ConsensusJob;
 import Heartbeat.GossipJob;
+import Heartbeat.Heartbeat;
 import Server.Server;
 import Server.ServerHandler;
 import Server.ServerState;
@@ -151,7 +152,14 @@ public class Server2ServerConnection extends Thread{
 				case "view":
 					LeaderElector.processViewMsg(response);
 			}
-		
+		case "heartbeat":
+			Heartbeat.updateHeartbeat(response);
+			break;
+			
+		case "electionProgressUpdate":
+			Heartbeat.receiveLeaderProgress(response);
+			break;
+			
 		case "heartbeat-gossip":
 			GossipJob.receiveMessages(response);
 			break;
