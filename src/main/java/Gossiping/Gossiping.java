@@ -27,7 +27,7 @@ public class Gossiping {
 
 	private static final Logger logger = LogManager.getLogger(Gossiping.class);
 
-	int serverCountForGossip = 2;
+	int serverCountForGossip = 1;
 
 	public JSONObject createChatRoomGossipingMsg() {
 		JSONObject msg = new JSONObject();
@@ -159,7 +159,7 @@ public class Gossiping {
 		ArrayList<Server> randomServers = getRandomServers();
 		for (Server server : randomServers) {
 			Sender.sendRespond(server.getServerSocketConnection(), obj);
-			logger.debug("json : "+ obj.toString() + "sent to ["+ server.getServerName() + "]");
+			logger.debug("json : "+ obj.get("heartbeatCountList").toString() + "sent to ["+ server.getServerName() + "]");
 		}
 	}
 

@@ -37,28 +37,36 @@ public class Heartbeat implements Runnable{
 	@Override
 	public void run() {
 		switch(option) {
-		case "Heartbeat":
+		case "heartbeat":
 			while(true) {
 				if(ServerState.getServerState().getServerName() != ServerState.getServerState().getLeaderServer().getServerName()) {
 					try {
+						logger.info("************************");
 						Thread.sleep(Constants.REQUEST_INTERVAL);
 						JSONObject heartbeatMessage = new JSONObject();
 						heartbeatMessage = this.serverMessage.heartbeatMessage(ServerState.getServerState().getServerName());
 						
-						Sender.sendRespond(ServerState.getServerState().getLeaderServer().getServerSocketConnection(), heartbeatMessage);
+						if(ServerState.getServerState().getLeaderServer().getServerSocketConnection() != null) {
+							Sender.sendRespond(ServerState.getServerState().getLeaderServer().getServerSocketConnection(), heartbeatMessage);	
+							logger.debug("heartbeat sent from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
+						}else {
+							logger.info(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
+						}
 						
-						logger.debug("heartbeat sent from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
 					} catch (IOException e) {
 						logger.debug("Heartbeat sending Failed from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
 						Runnable LeaderDown = new Heartbeat("LeaderDown");
 		                new Thread(LeaderDown).start();
 		                
 					} catch (InterruptedException e) {
-						logger.debug("Heartbeat request interval error");
+						logger.error("Heartbeat request interval error");
+					
+//					} catch (NullPointerException e) {
+//						logger.info(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
 					}
 				}
 			}
-		case "LeaderDown":
+		case "leaderdown":
 			ServerState.getServerState().removeSuspectServer(ServerState.getServerState().getLeaderServer().getServerName());
 			ServerState.getServerState().setLeaderServer(null);
 			try {

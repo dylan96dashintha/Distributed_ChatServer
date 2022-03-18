@@ -21,6 +21,7 @@ import Connection.ClientServerConnection;
 import Connection.Server2ServerConnection;
 import Heartbeat.ConsensusJob;
 import Heartbeat.GossipJob;
+import Heartbeat.Heartbeat;
 import Messaging.Sender;
 import Server.ServerState;
 import model.Constants;
@@ -124,11 +125,16 @@ public class App
 	    	
     	boolean isListening = true;
     	
-    	if(isListening) {
-    		logger.info("Failure Detection is running GOSSIP mode");
-	    	startGossipJob();
-	    	startConsensusJob();
-    	}
+    	//start leader election if needed
+    	Runnable heartbeat = new Heartbeat("Heartbeat");
+        new Thread(heartbeat).start();
+    	
+//        //start heartbeat process
+//    	if(isListening) {
+//    		logger.info("Failure Detection is running GOSSIP mode");
+//	    	startGossipJob();
+//	    	startConsensusJob();
+//    	}
     	
     	while (true) {
 	       try {

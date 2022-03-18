@@ -267,7 +267,6 @@ public class ServerState {
     
     //remove suspect server data
     public static void removeSuspectServer(String suspectServerName) {
-
     	//remove server from serverHashMap
     	if(ServerState.getServerState().getServersHashmap().containsKey(suspectServerName)) {
     		ServerState.getServerState().removeServer(suspectServerName);

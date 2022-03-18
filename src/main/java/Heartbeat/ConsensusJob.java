@@ -32,7 +32,7 @@ public class ConsensusJob implements Job{
                 ServerState.getServerState().onGoingConsensus().set(false);
             }
         } else {
-        	logger.info("There seems to be on going consensus(ex: leader election) at the moment!");
+        	logger.info("There seems to be on going consensus at the moment!");
 //            System.out.println("[SKIP] There seems to be on going consensus at the moment, skip.");
         }
 		
@@ -53,7 +53,6 @@ public class ConsensusJob implements Job{
 
         // if I am leader, and suspect someone, I want to start voting to KICK him!
         if (myServerId.equals(leaderServerId)) {
-
             // find the next suspect to vote and break the loop
             for (String serverId : ServerState.getServerState().getSuspectList().keySet()) {
                 if (ServerState.getServerState().getSuspectList().get(serverId).equals("SUSPECTED")) {
@@ -77,9 +76,9 @@ public class ConsensusJob implements Job{
                 startVoteMessage = serverMessage.startVoteMessage(ServerState.getServerState().getServerName(), suspectServerId);
                 try {
                     gossiping.sendServerBroadcast(startVoteMessage, serverList);
-                    logger.debug("Leader calling for vote to kick suspect-server: " + startVoteMessage);
+                    logger.info("Leader calling for vote to kick suspect-server: " + startVoteMessage);
                 } catch (Exception e) {
-                	logger.debug("Leader calling for vote to kick suspect-server is failed");
+                	logger.error("Leader calling for vote to kick suspect-server is failed");
                 }
 
                 //wait for consensus vote duration period
@@ -89,7 +88,7 @@ public class ConsensusJob implements Job{
                     e.printStackTrace();
                 }
 
-                logger.debug((String.format("Consensus votes to kick server [%s]: %s", suspectServerId, ServerState.getServerState().getVoteSet())));
+                logger.info((String.format("Consensus votes to kick server [%s]: %s", suspectServerId, ServerState.getServerState().getVoteSet())));
 
                 if (ServerState.getServerState().getVoteSet().get("YES") > ServerState.getServerState().getVoteSet().get("NO")) {
 
@@ -97,14 +96,14 @@ public class ConsensusJob implements Job{
                     notifyServerDownMessage = serverMessage.notifyServerDownMessage(suspectServerId);
                     try {
                         gossiping.sendServerBroadcast(notifyServerDownMessage, serverList);
-                        logger.debug(" Notify server " + suspectServerId + " down. Removing...");
+                        logger.info(" Notify server " + suspectServerId + " down. Removing from ["+ ServerState.getServerState().getServerName() + "]");
                         ServerState.getServerState().removeSuspectServer(suspectServerId);
 
                     } catch (Exception e) {
                         logger.error( suspectServerId + "Removing is failed");
                     }
 
-                    logger.debug("INFO : Number of servers in group: " + ServerState.getServerState().getServersHashmap().size());
+                    logger.info("Number of servers in group: " + ServerState.getServerState().getServersHashmap().size());
                 }
             }
         }
@@ -125,7 +124,7 @@ public class ConsensusJob implements Job{
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "YES", mySeverId);
                 try {
                 	Sender.sendRespond(ServerState.getServerState().getServersHashmap().get(serverId).getServerSocketConnection(), answerVoteMessage);
-                    logger.debug(String.format("Voting on suspected server: [%s] vote: YES", suspectServerId));
+                    logger.info(String.format("Voting on suspected server: [%s] vote: YES", suspectServerId));
                 } catch (Exception e) {
                     logger.error("Voting on suspected server is failed");
                 }
@@ -136,9 +135,9 @@ public class ConsensusJob implements Job{
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "NO", mySeverId);
                 try {
                 	Sender.sendRespond(ServerState.getServerState().getServersHashmap().get(serverId).getServerSocketConnection(), answerVoteMessage);
-                	logger.debug(String.format("Voting on suspected server: [%s] vote: NO", suspectServerId));
+                	logger.info(String.format("Voting on suspected server: [%s] vote: NO", suspectServerId));
                 } catch (Exception e) {
-                	logger.debug("Voting on suspected server is failed");
+                	logger.error("Voting on suspected server is failed");
                 }
             }
         }
@@ -168,7 +167,7 @@ public class ConsensusJob implements Job{
     public static void notifyServerDownMessageHandler(JSONObject j_object){
 
         String suspectServerId = (String)j_object.get("serverId");
-        logger.debug("Server down notification received. Removing server: " + suspectServerId);
+        logger.info("Server down notification received. Removing "+ suspectServerId +"server from ["+ ServerState.getServerState().getServerName() + "]");
         ServerState.getServerState().removeSuspectServer(suspectServerId);
     }
 

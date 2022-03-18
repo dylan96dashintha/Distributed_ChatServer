@@ -7,9 +7,8 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-//import java.util.ArrayList;
 import java.util.HashMap;
-//import java.util.concurrent.ThreadLocalRandom;
+import java.util.Map;
 
 import Server.Server;
 import Server.ServerState;
@@ -36,7 +35,6 @@ public class GossipJob implements Job{
 
             // get current heart beat count of a server
             Integer count = ServerState.getServerState().getHeartbeatCountList().get(serverId);
-            logger.info("before count of "+ serverId + " : " + count);
             
             // first update heart beat count vector
             if (serverId.equals(myServerId)) {
@@ -52,7 +50,6 @@ public class GossipJob implements Job{
 
             // FIX get the fresh updated current count again
             count = ServerState.getServerState().getHeartbeatCountList().get(serverId);
-            logger.info("after count of "+ serverId + " : " + count);
 
             if (count != null) {
                 // if heart beat count is more than error factor
@@ -65,61 +62,33 @@ public class GossipJob implements Job{
 
         }
 
-        // next challenge leader election if a coordinator is in suspect list
-
-//        if (leaderState.isLeaderElected()){
-//
-//            Integer leaderServerId = leaderState.getLeaderID();
-//            System.out.println("Current coordinator is : " + leaderState.getLeaderID().toString());
-//
-//            // if the leader/coordinator server is in suspect list, start the election process
-//            if (serverState.getSuspectList().get(leaderServerId).equals("SUSPECTED")) {
-//
-//                //initiate an election
-//                BullyAlgorithm.initialize();
-//            }
-//        }
-
-        // finally gossip about heart beat vector to a next peer
-
         int numOfServers = ServerState.getServerState().getServersHashmap().size();
 
         if (numOfServers > 1) { // Gossip required at least 2 servers to be up
-        	
-//            after updating the heartbeatCountList, randomly select a server and send
-//            Integer serverIndex = ThreadLocalRandom.current().nextInt(numOfServers - 1);
-//            ArrayList<Server> remoteServer = new ArrayList<>();
-//            for (Server server : serverState.getServersHashmap().values()) {
-//            	String serverId = server.getServerName();
-//                String myServerId = serverState.getServerName();
-//                if (!serverId.equals(myServerId)) {
-//                    remoteServer.add(server);
-//                }
-//            }
-            //Collections.shuffle(remoteServer, new Random(System.nanoTime())); // another way of randomize the list
 
             // change concurrent hashmap to hashmap before sending
             HashMap<String, Integer> heartbeatCountList = new HashMap<>(ServerState.getServerState().getHeartbeatCountList());
             JSONObject gossipMessage = new JSONObject();
             gossipMessage = serverMessage.gossipMessage(ServerState.getServerState().getServerName(), heartbeatCountList);
             try {
-            	logger.debug("checking.....");
             	gossiping.spreadGossipMsg(gossipMessage);
-//                MessageTransfer.sendServer(gossipMessage,remoteServer.get(serverIndex));
-            	logger.debug("send heartbeatcount for two servers are starting");
+            	logger.info("send heartbeatcount is starting");
             } catch (Exception e){
             	logger.error("send heartbeatcount is failed : " + e);
-//                System.out.println("WARN : Server s"+remoteServer.get(serverIndex).getServerID() + " has failed");
             }
         }
 	}
     
     public static void receiveMessages(JSONObject j_object) {
-
-        HashMap<String, Integer> gossipFromOthers = (HashMap<String, Integer>) j_object.get("heartbeatCountList");
+    	
+    	JSONObject json = (JSONObject) j_object.get("heartbeatCountList");
+    	Map<String, Object> gossipFromOthers = json.toMap();
+    	
+    	Integer a = (Integer) gossipFromOthers.get("s1");
+    	        
         String fromServer = (String)j_object.get("serverId");
-
-        logger.debug("Receiving heartbeatcount : "+ gossipFromOthers + " from server: [" + fromServer.toString() + "]");
+        
+        logger.info("Receiving heartbeatcount : "+ j_object.get("heartbeatCountList").toString() + " from server: [" + fromServer.toString() + "]");
 
         //update the heartbeatcountlist by taking minimum
         for (String serverId : gossipFromOthers.keySet()) {
