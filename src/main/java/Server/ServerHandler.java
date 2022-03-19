@@ -41,6 +41,7 @@ public class ServerHandler {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
+		    
 		}else {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connection FAILED with server "+ response.getString("server"));
 		}
@@ -101,6 +102,14 @@ public class ServerHandler {
 			}
 		ServerState.getServerState().setOtherServersUsers(users);
 		ServerState.getServerState().addIdentityRequesID(response.getString("id"));
+	}
+	
+	public void deleteChatroom(JSONObject response) {
+		String chatroomToDelete = response.getString("roomid");
+		
+		ConcurrentHashMap<String, String> otherServers =  ServerState.getServerState().getOtherServersChatRooms();
+		otherServers.remove(chatroomToDelete);
+		ServerState.getServerState().setOtherServersUsers(otherServers);
 	}
 	
 	

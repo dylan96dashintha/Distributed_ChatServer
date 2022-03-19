@@ -125,7 +125,12 @@ public class Server2ServerConnection extends Thread{
 			}
 			break;
 		
+		
+		case "deleteroom":
+			this.serverHandeler.deleteChatroom(response);
+			break;
 		}
+	
 		
 		
 	}

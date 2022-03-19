@@ -20,6 +20,7 @@ public class Sender {
 	private static final Logger logger = LogManager.getLogger(Sender.class);
 	
 	public static void sendRespond(Socket socket, JSONObject jsonObj) throws IOException {
+		logger.debug("Send respond :: "+jsonObj+" socket :: "+socket);
 		DataOutputStream opStream = new DataOutputStream(socket.getOutputStream());
 		opStream.write((jsonObj.toString()+ "\n").getBytes(StandardCharsets.UTF_8));
 		opStream.flush();
@@ -44,6 +45,19 @@ public class Sender {
 		
 	}
 	
+	
+	public static void sendMessageToUserList(ConcurrentLinkedQueue<User> userList, JSONObject jsonObj)
+			throws IOException {
+
+		logger.debug("sendMessageToUserList() " + userList.toString());
+
+		for (User user : userList) {
+			DataOutputStream opStream = new DataOutputStream(user.getUserSocket().getOutputStream());
+			opStream.write((jsonObj.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+			opStream.flush();
+		}
+
+	}
 	
 	public static void sendNotificationChatroom(String chatRoomName, JSONObject jsonObj,String username) throws IOException {
 		
