@@ -43,10 +43,10 @@ public class LeaderChannel {
 			int c = 0;
 			while ((!(ServerState.getServerState().checkChatRoomRequestCompleted(id))) && c<20) {
 				try {
-					logger.debug("in loop");
+
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
-					logger.debug(c);
+
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -101,10 +101,10 @@ public class LeaderChannel {
 			int c = 0;
 			while ((!(ServerState.getServerState().checkIdentityRequestCompleted(id))) && c<20) {
 				try {
-					logger.debug("in loop");
+		
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
-					logger.debug(c);
+
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

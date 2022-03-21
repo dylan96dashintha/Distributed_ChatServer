@@ -62,7 +62,7 @@ public class Server2ServerConnection extends Thread{
 		GossipingHandler gossiping = new GossipingHandler();
 		
 		String type = response.getString("type");
-		logger.debug(response.toString());
+//		logger.debug(response.toString());
 		switch(type) {
 		case "server-connection-request":	
 			try {

@@ -54,9 +54,9 @@ public class ClientHandler {
 
 	public void getTypeFunctionality(JSONObject jsnObj) {
 //		SUDESH - ADDED
-//		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
+		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 //		SUDESH - REMOVED
-		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+//		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
@@ -127,17 +127,17 @@ public class ClientHandler {
 			// TODO - Done
 			// Global chat rooms to be applied here
 //			SUDESH - REMOVED
-			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+//			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 //			SUDESH - ADDED
-//			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
+			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 			for (String roomNameList : otherServersChatRooms.keySet()) {
 				logger.debug("List :: otherserverrooms :: "+roomNameList);
 				roomList.add(roomNameList);
 			}
 //			SUDESH - REMOVED
-			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
-				roomList.add(chatRoom.getRoomName());
-			}
+//			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
+//				roomList.add(chatRoom.getRoomName());
+//			}
 			resList = new JSONObject().put("type", "roomlist").put("rooms", roomList);
 			logger.debug("Room List: " + resList);
 			try {
@@ -226,7 +226,7 @@ public class ClientHandler {
 				} else {
 					logger.debug("create room failed");
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type",
-							"createrroom");
+							"createroom");
 					try {
 						Sender.sendRespond(socket, createRoomRes);
 					} catch (IOException e) {
