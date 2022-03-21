@@ -39,30 +39,26 @@ public class Heartbeat implements Runnable{
 		switch(option) {
 		case "heartbeat":
 			while(true) {
-				if(ServerState.getServerState().getServerName() != ServerState.getServerState().getLeaderServer().getServerName()) {
+				if(!ServerState.getServerState().getServerName().equals(ServerState.getServerState().getLeaderServer().getServerName())) {
 					try {
-						logger.info("************************");
 						Thread.sleep(Constants.REQUEST_INTERVAL);
 						JSONObject heartbeatMessage = new JSONObject();
 						heartbeatMessage = this.serverMessage.heartbeatMessage(ServerState.getServerState().getServerName());
 						
-						if(ServerState.getServerState().getLeaderServer().getServerSocketConnection() != null) {
-							Sender.sendRespond(ServerState.getServerState().getLeaderServer().getServerSocketConnection(), heartbeatMessage);	
-							logger.debug("heartbeat sent from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
-						}else {
-							logger.info(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
-						}
+							Sender.sendRespond(ServerState.getServerState().getServerByName(ServerState.getServerState().getLeaderServer().getServerName()).getServerSocketConnection(), heartbeatMessage);	
+							logger.info("heartbeat sent to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
+
 						
 					} catch (IOException e) {
-						logger.debug("Heartbeat sending Failed from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
+						logger.info("Heartbeat sending Failed from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
 						Runnable LeaderDown = new Heartbeat("LeaderDown");
 		                new Thread(LeaderDown).start();
 		                
 					} catch (InterruptedException e) {
 						logger.error("Heartbeat request interval error");
 					
-//					} catch (NullPointerException e) {
-//						logger.info(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
+					} catch (NullPointerException e) {
+						logger.error(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
 					}
 				}
 			}
@@ -100,8 +96,10 @@ public class Heartbeat implements Runnable{
 		JSONObject startElectionRequestMessage = new JSONObject();
 		startElectionRequestMessage = this.serverMessage.startElectionRequestMessage(ServerState.getServerState().getLeaderServer(), ServerState.getServerState().isInProgressLeaderElection());
 		
-		ArrayList<Server> serverList = (ArrayList<Server>) ServerState.getServerState().getServersHashmap().values();
-		this.gossiping.sendServerBroadcast(startElectionRequestMessage, serverList);
+//		ArrayList<Server> serverList = ServerState.getServerState().getServersHashmap().values();
+		ArrayList<Server> list = new ArrayList<Server>(ServerState.getServerState().getServersHashmap().values());
+		logger.info("server list : "+ list.toString());
+//		this.gossiping.sendServerBroadcast(startElectionRequestMessage, serverList);
 	}
 
 	public static void receiveLeaderProgress(JSONObject response) {
@@ -123,7 +121,7 @@ public class Heartbeat implements Runnable{
 	public static void updateHeartbeat(JSONObject response) {
 		if(ServerState.getServerState().getServerName().equals(ServerState.getServerState().getLeaderServer().getServerName())) {
 			String senderID = response.get( "sender" ).toString();
-			logger.debug("heartbeat sent to leader by "+ senderID);
+			logger.info("heartbeat sent to leader by "+ senderID);
 			
 //			String currentTime = getCurrentTime();
 //			String previousTime = ServerState.getServerState().getPreviousHeartbeatHashmap().get(senderID);
@@ -157,9 +155,6 @@ public class Heartbeat implements Runnable{
 //	            }
 //			}
 		}
-		
-		
-		
 	};
 	
 	public static String getCurrentTime() {
