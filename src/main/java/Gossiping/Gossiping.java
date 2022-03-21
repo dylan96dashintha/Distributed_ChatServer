@@ -85,7 +85,7 @@ public class Gossiping {
 		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersChatRooms.entrySet().iterator();
 		while (iterator.hasNext()) {
 		    if (iterator.next().getValue().equals(obj.getString("from")))
-		        iterator.remove();
+		    	iterator.remove();
 		}
 			
 		JSONArray chatroomArray = obj.getJSONArray("room-list");

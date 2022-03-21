@@ -2,13 +2,17 @@ package Server;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ClientHandler.ClientHandler;
+import ClientHandler.User;
 import Gossiping.GossipingHandler;
 import Messaging.Sender;
 import Server.ServerState;
@@ -26,27 +30,39 @@ public class ServerHandler {
 		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+serveName);
 		JSONObject obj = new JSONObject();
 		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName());
-		Sender.sendRespond(socket, obj);
-		logger.info("Message sent");
-		GossipingHandler gh = new GossipingHandler();
-		try {
-			gh.sendChatRoomCreateGossip();
-		} catch (IOException e) {
-			logger.error(e.getMessage());
+		ArrayList<String> chatrooms = new ArrayList<String>();
+		for (ConcurrentHashMap.Entry<String, ChatRoom> e: ServerState.getServerState().getChatRoomHashmap().entrySet()) {
+			chatrooms.add(e.getKey());
 		}
+		obj.put("chatrooms", chatrooms);
+		ArrayList<String> users = new ArrayList<String>();
+		for (User e: ServerState.getServerState().getIdentityList()) {
+			users.add(e.getName());
+		}
+		obj.put("identity", users);
+		
+		Sender.sendRespond(socket, obj);
+
+//		GossipingHandler gh = new GossipingHandler();
+//		try {
+//			gh.sendChatRoomCreateGossip();
+//		} catch (IOException e) {
+//			logger.error(e.getMessage());
+//		}
 	}
 	
 	public void newServerConnectionConfirm(JSONObject response) {
 		if (response.getBoolean("connected")) {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+ response.getString("server"));
-			//for testing
-//			GossipingHandler gh = new GossipingHandler();
-//			try {
-//				gh.sendChatRoomCreateGossip();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			//Set chat rooms
+			JSONArray chatrooms = response.getJSONArray("chatrooms");
+			String server = response.getString("server");
+			ConcurrentHashMap<String, String> otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+			for (int x=0; x<chatrooms.length(); x++) {
+				otherServersChatRooms.put(chatrooms.getString(x), server);
+			}
+			ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
+			//TODO- set identities
 		    
 		}else {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connection FAILED with server "+ response.getString("server"));

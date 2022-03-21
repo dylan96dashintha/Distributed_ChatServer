@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -106,6 +107,16 @@ public class ServerState {
 
 	public void setChatRoomHashmap(ConcurrentHashMap<String, ChatRoom> chatRoomHashmap) {
 		this.chatRoomHashmap = chatRoomHashmap;
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = this.otherServersChatRooms.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName))
+		    	iterator.remove();
+		}
+		
+		for (ConcurrentHashMap.Entry<String, ChatRoom> e: chatRoomHashmap.entrySet()) {
+			this.otherServersChatRooms.put(e.getValue().getRoomName(), this.serverName);
+		}
 	}
 
 	public String getServerName() {

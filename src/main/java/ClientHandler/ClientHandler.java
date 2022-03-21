@@ -47,11 +47,16 @@ public class ClientHandler {
 		mainHall = chatRoomMainHall.getRoomName();
 		chatRoom = new ChatRoom();
 		gossipingHandle = new GossipingHandler();
-		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+
+
 
 	}
 
 	public void getTypeFunctionality(JSONObject jsnObj) {
+//		SUDESH - ADDED
+//		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
+//		SUDESH - REMOVED
+		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
@@ -109,19 +114,27 @@ public class ClientHandler {
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
-			try {
-				gossipingHandle.sendChatRoomCreateGossip();
-			} catch (IOException e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
-			}
+//			JSONObject req = new JSONObject().put("type", "gossip-chatrooms-request");
+//			for (ConcurrentHashMap.Entry<String, Server> e: ServerState.getServerState().getServersHashmap().entrySet()) {
+//				try {
+//					Sender.sendRespond(e.getValue().getServerSocketConnection(), req);
+//				} catch (IOException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+//			}
+			
 			// TODO - Done
 			// Global chat rooms to be applied here
+//			SUDESH - REMOVED
 			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+//			SUDESH - ADDED
+//			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 			for (String roomNameList : otherServersChatRooms.keySet()) {
 				logger.debug("List :: otherserverrooms :: "+roomNameList);
 				roomList.add(roomNameList);
 			}
+//			SUDESH - REMOVED
 			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
 				roomList.add(chatRoom.getRoomName());
 			}

@@ -129,7 +129,19 @@ public class Server2ServerConnection extends Thread{
 		case "deleteroom":
 			this.serverHandeler.deleteChatroom(response);
 			break;
+		
+		case "gossip-chatrooms-request":
+			try {
+				gossiping.sendChatRoomCreateGossip();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		
 		}
+		
+		
 	
 		
 		
