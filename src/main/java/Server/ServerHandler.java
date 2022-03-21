@@ -28,6 +28,12 @@ public class ServerHandler {
 		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName());
 		Sender.sendRespond(socket, obj);
 		logger.info("Message sent");
+		GossipingHandler gh = new GossipingHandler();
+		try {
+			gh.sendChatRoomCreateGossip();
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
 	}
 	
 	public void newServerConnectionConfirm(JSONObject response) {
