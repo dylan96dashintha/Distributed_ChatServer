@@ -62,7 +62,7 @@ public class Server2ServerConnection extends Thread{
 		GossipingHandler gossiping = new GossipingHandler();
 		
 		String type = response.getString("type");
-		logger.debug(response.toString());
+//		logger.debug(response.toString());
 		switch(type) {
 		case "server-connection-request":	
 			try {
@@ -129,7 +129,19 @@ public class Server2ServerConnection extends Thread{
 		case "deleteroom":
 			this.serverHandeler.deleteChatroom(response);
 			break;
+		
+		case "gossip-chatrooms-request":
+			try {
+				gossiping.sendChatRoomCreateGossip();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+		
 		}
+		
+		
 	
 		
 		

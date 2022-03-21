@@ -107,6 +107,16 @@ public class ServerState {
 
 	public void setChatRoomHashmap(ConcurrentHashMap<String, ChatRoom> chatRoomHashmap) {
 		this.chatRoomHashmap = chatRoomHashmap;
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = this.otherServersChatRooms.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName))
+		    	iterator.remove();
+		}
+		
+		for (ConcurrentHashMap.Entry<String, ChatRoom> e: chatRoomHashmap.entrySet()) {
+			this.otherServersChatRooms.put(e.getValue().getRoomName(), this.serverName);
+		}
 	}
 
 	public String getServerName() {
