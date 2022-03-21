@@ -107,6 +107,7 @@ public class ChatRoom {
 	
 	public void joinRoom(User user) {
 		userListInRoom.add(user);
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 		
 	}
 	
@@ -171,5 +172,6 @@ public class ChatRoom {
 
 	public void setUserListInRoom(ConcurrentLinkedQueue<User> userListInRoom) {
 		this.userListInRoom = userListInRoom;
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 	}
 }

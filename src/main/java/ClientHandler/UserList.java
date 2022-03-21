@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import Gossiping.GossipingHandler;
+import Messaging.LeaderChannel;
 import Server.ServerState;
 
 public class UserList {
@@ -15,6 +16,7 @@ public class UserList {
 	public ConcurrentHashMap<String, String> otherServerUsers;
 	public GossipingHandler gossipingHandle = new GossipingHandler();
 	private User user;
+	public LeaderChannel leaderchannel;
 	public boolean addUser(String name, Socket socket) {
 		if (isUnique(name) && isUniqueOtherServer(name)) {
 			//TODO - Done
@@ -27,6 +29,7 @@ public class UserList {
 			//Add user to other servers users list
 			identityList.add(user);
 			ServerState.getServerState().setIdentityList(identityList);
+			
 			try {
 				gossipingHandle.sendNewIdentityGossip();
 				return true;
@@ -63,7 +66,9 @@ public class UserList {
 	//TODO - Done
 	//Check with other servers to check the user is unique
 	public boolean isUniqueOtherServer(String name) {
-		otherServerUsers = ServerState.getServerState().getOtherServersUsers();
+		leaderchannel = new LeaderChannel();
+		otherServerUsers =  leaderchannel.getGlobalIdentities();
+		
 		boolean isUniOtherserver = true;
 		if (otherServerUsers.containsKey(name)) {
 			isUniOtherserver = false;
