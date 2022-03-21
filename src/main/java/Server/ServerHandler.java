@@ -29,14 +29,19 @@ public class ServerHandler {
 		
 		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+server.getServerName());
 		JSONObject obj = new JSONObject();
-		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName());
+		obj.put("type","server-connection-response")
+		.put("connected", true)
+		.put("server", ServerState.getServerState().getServerName())
+		.put("leader-server",ServerState.getServerState().getLeaderServer().getServerName());
 		Sender.sendRespond(socket, obj);
-		logger.info("Message sent");
 	}
 	
 	public void newServerConnectionConfirm(JSONObject response) {
 		if (response.getBoolean("connected")) {
+			Server leaderServer = ServerState.getServerState().getServerByName(response.getString("leader-server"));
+			ServerState.getServerState().setLeaderServer(leaderServer);
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+ response.getString("server"));
+			
 			//for testing
 //			GossipingHandler gh = new GossipingHandler();
 //			try {
