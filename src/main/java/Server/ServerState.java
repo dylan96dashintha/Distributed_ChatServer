@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -145,6 +146,15 @@ public class ServerState {
 	}
 
 	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersUsers.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName)) {
+		    	iterator.remove();
+		    }
+		}
+		for (User user : identityList) {
+			otherServersUsers.put(user.getName(), this.serverName);
+		}
 		this.identityList = identityList;
 	}
 	
