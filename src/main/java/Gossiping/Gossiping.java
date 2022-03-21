@@ -159,7 +159,6 @@ public class Gossiping {
 		ArrayList<Server> randomServers = getRandomServers();
 		for (Server server : randomServers) {
 			Sender.sendRespond(server.getServerSocketConnection(), obj);
-			logger.debug("json : "+ obj.get("heartbeatCountList").toString() + "sent to ["+ server.getServerName() + "]");
 		}
 	}
 
@@ -181,10 +180,8 @@ public class Gossiping {
 			if ((!(server.equals(currentServerName))) && (!(randomServers.contains(currentServers.get(server))))) {
 				i++;
 				randomServers.add(currentServers.get(server));
-				logger.debug("Random selected server: "+currentServers.get(server).getServerName());
 			}
 		}
-		logger.debug("Random Server Count: "+randomServers.size());
 		return randomServers;
 
 	}
@@ -194,10 +191,9 @@ public class Gossiping {
         	try {
 				Sender.sendRespond(server.getServerSocketConnection(), obj);
 			} catch (IOException e) {
-				logger.debug("sendServerBroadcast is failed, Json of : "+ obj + " to : "+ server.getServerName());
+				logger.debug("sendServerBroadcast is failed to : "+ server.getServerName());
 				ServerState.getServerState().getSuspectList().put(server.getServerName(), "SUSPECTED");
 			}
-        	logger.debug("send server broadcast: "+server.getServerName());
         }
     }
 }

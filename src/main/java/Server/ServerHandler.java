@@ -19,11 +19,15 @@ public class ServerHandler {
 	
 	private static final Logger logger = LogManager.getLogger(ServerHandler.class);
 	
-	public void newServerConnection(Socket socket, String serveName) throws IOException {
-		Server server = ServerState.getServerState().getServerByName(serveName);
+	public void newServerConnection(Socket socket, JSONObject response) throws IOException {
+		
+		Server server = new Server(response.getString("server"), response.getString("server-address"), response.getInt("server-port"), response.getInt("client-port"));
+		
 		server.setServerSocketConnection(socket);
 		ServerState.getServerState().replaceServerbByName(server);
-		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+serveName);
+		logger.debug("LISTENING....." + ServerState.getServerState().getServersHashmap().toString());
+		
+		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+server.getServerName());
 		JSONObject obj = new JSONObject();
 		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName());
 		Sender.sendRespond(socket, obj);

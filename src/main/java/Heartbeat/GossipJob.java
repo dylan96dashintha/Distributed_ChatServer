@@ -72,10 +72,11 @@ public class GossipJob implements Job{
             gossipMessage = serverMessage.gossipMessage(ServerState.getServerState().getServerName(), heartbeatCountList);
             try {
             	gossiping.spreadGossipMsg(gossipMessage);
-            	logger.info("send heartbeatcount is starting");
+            	logger.info("heartbeat state : " + ServerState.getServerState().getHeartbeatCountList());
             } catch (Exception e){
-            	logger.error("send heartbeatcount is failed : " + e);
+//            	logger.error("send heartbeatcount is failed : ");
             }
+            
         }
 	}
     
@@ -88,7 +89,6 @@ public class GossipJob implements Job{
     	        
         String fromServer = (String)j_object.get("serverId");
         
-        logger.info("Receiving heartbeatcount : "+ j_object.get("heartbeatCountList").toString() + " from server: [" + fromServer.toString() + "]");
 
         //update the heartbeatcountlist by taking minimum
         for (String serverId : gossipFromOthers.keySet()) {
@@ -99,7 +99,7 @@ public class GossipJob implements Job{
             }
         }
 
-        logger.info("Current cluster heart beat state is: " + ServerState.getServerState().getHeartbeatCountList());
+//        logger.info("heartbeat state : " + ServerState.getServerState().getHeartbeatCountList());
 
         if (ServerState.getServerState().isLeaderElected() && ServerState.getServerState().getLeaderServer().getServerName().equals(ServerState.getServerState().getServerName())) {
             if (ServerState.getServerState().getHeartbeatCountList().size() < gossipFromOthers.size()) {

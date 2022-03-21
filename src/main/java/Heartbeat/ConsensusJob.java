@@ -33,7 +33,6 @@ public class ConsensusJob implements Job{
             }
         } else {
         	logger.info("There seems to be on going consensus at the moment!");
-//            System.out.println("[SKIP] There seems to be on going consensus at the moment, skip.");
         }
 		
 	}
@@ -76,7 +75,7 @@ public class ConsensusJob implements Job{
                 startVoteMessage = serverMessage.startVoteMessage(ServerState.getServerState().getServerName(), suspectServerId);
                 try {
                     gossiping.sendServerBroadcast(startVoteMessage, serverList);
-                    logger.info("Leader calling for vote to kick suspect-server: " + startVoteMessage);
+                    logger.info("Leader calling for vote to kick suspect-server: " + suspectServerId);
                 } catch (Exception e) {
                 	logger.error("Leader calling for vote to kick suspect-server is failed");
                 }
@@ -96,7 +95,8 @@ public class ConsensusJob implements Job{
                     notifyServerDownMessage = serverMessage.notifyServerDownMessage(suspectServerId);
                     try {
                         gossiping.sendServerBroadcast(notifyServerDownMessage, serverList);
-                        logger.info(" Notify server " + suspectServerId + " down. Removing from ["+ ServerState.getServerState().getServerName() + "]");
+                        logger.info(" SERVER " + suspectServerId + " DOWN");
+                        
                         ServerState.getServerState().removeSuspectServer(suspectServerId);
 
                     } catch (Exception e) {
@@ -165,9 +165,8 @@ public class ConsensusJob implements Job{
     }
     
     public static void notifyServerDownMessageHandler(JSONObject j_object){
-
         String suspectServerId = (String)j_object.get("serverId");
-        logger.info("Server down notification received. Removing "+ suspectServerId +"server from ["+ ServerState.getServerState().getServerName() + "]");
+        logger.info(" SERVER " + suspectServerId + " DOWN");
         ServerState.getServerState().removeSuspectServer(suspectServerId);
     }
 

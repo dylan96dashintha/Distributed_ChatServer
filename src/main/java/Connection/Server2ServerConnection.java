@@ -66,11 +66,11 @@ public class Server2ServerConnection extends Thread{
 		GossipingHandler gossiping = new GossipingHandler();
 		
 		String type = response.getString("type");
-		logger.debug(response.toString());
+//		logger.debug(response.toString());
 		switch(type) {
 		case "server-connection-request":	
 			try {
-				this.serverHandeler.newServerConnection(this.socket, response.getString("server"));
+				this.serverHandeler.newServerConnection(this.socket, response);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -159,11 +159,7 @@ public class Server2ServerConnection extends Thread{
 		case "heartbeat":
 			Heartbeat.updateHeartbeat(response);
 			break;
-			
-		case "electionProgressUpdate":
-			Heartbeat.receiveLeaderProgress(response);
-			break;
-			
+		
 		case "heartbeat-gossip":
 			GossipJob.receiveMessages(response);
 			break;

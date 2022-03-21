@@ -31,7 +31,6 @@ public class ServerState {
 	
 //	private Server currentServer;
 	private Server leaderServer;
-	private ConcurrentHashMap<String, Boolean> inProgressLeaderElection = new ConcurrentHashMap<>();
 
 	private AtomicBoolean ongoingConsensus = new AtomicBoolean(false);
 	
@@ -94,9 +93,7 @@ public class ServerState {
 											server.getInt("server-port"),
 											server.getInt("client-port") );
 			}
-			
-			inProgressLeaderElection.put(server.getString("server-name"), false);
-			
+						
 		}
 	
 		//create a mainhall room
@@ -296,29 +293,19 @@ public class ServerState {
 		    	userIterator.remove();
 		}
     }
-
-	public ConcurrentHashMap<String, Boolean> isInProgressLeaderElection() {
-		return inProgressLeaderElection;
-	}
-
-	public void setInProgressLeaderElection(String server, Boolean status) {
-		this.inProgressLeaderElection.put(server, status);
-	}
-	
-	public void setInProgressLeaderElection(ConcurrentHashMap<String, Boolean> curretProgressStatus) {
-		this.inProgressLeaderElection = curretProgressStatus;
-	}
 	
 	public void createServer2ServerConnection() {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {
 			if (!(entry.getKey().equals(this.serverName))) {
 				try {
+					logger.debug("check entry server :: "+ entry.getValue().getServerName());
 					Socket socket = new Socket(entry.getValue().getServerAddress(), entry.getValue().getServerPort());
+//					logger.debug("socket :: "+ socket.toString());
 					logger.info("Server "+ this.serverName + " is connected to Server "+entry.getValue().getServerName()
 							+ " using address " +entry.getValue().getServerAddress() 
 							+ " port " + entry.getValue().getServerPort());
 					JSONObject obj = new JSONObject();
-					obj.put("type","server-connection-request").put("server", this.serverName);
+					obj.put("type","server-connection-request").put("server", this.serverName).put("server-address", this.serverAddress).put("server-port", this.serverPort).put("client-port", this.clientPort);
 					Sender.sendRespond(socket, obj);
 					Server s = entry.getValue();
 					s.setServerSocketConnection(socket);
