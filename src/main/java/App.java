@@ -129,12 +129,12 @@ public class App
     	Runnable heartbeat = new Heartbeat("Heartbeat");
         new Thread(heartbeat).start();
     	
-//        //start heartbeat process
-//    	if(isListening) {
-//    		logger.info("Failure Detection is running GOSSIP mode");
-//	    	startGossipJob();
-//	    	startConsensusJob();
-//    	}
+        //start heartbeat process
+    	if(isListening) {
+    		logger.info("Failure Detection is running GOSSIP mode");
+	    	startGossipJob();
+	    	startConsensusJob();
+    	}
     	
     	while (true) {
 	       try {

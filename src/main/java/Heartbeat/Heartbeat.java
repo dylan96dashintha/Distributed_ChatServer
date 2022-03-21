@@ -27,6 +27,7 @@ public class Heartbeat implements Runnable{
 	private String option;
 	private ServerMessage serverMessage;
 	private Gossiping gossiping;
+	boolean running = true;
 	
 	public Heartbeat(String option){
 		this.option = option.toLowerCase();
@@ -38,7 +39,8 @@ public class Heartbeat implements Runnable{
 	public void run() {
 		switch(option) {
 		case "heartbeat":
-			while(true) {
+			
+			while(this.running) {
 				if(!ServerState.getServerState().getServerName().equals(ServerState.getServerState().getLeaderServer().getServerName())) {
 					try {
 						Thread.sleep(Constants.REQUEST_INTERVAL);
@@ -46,49 +48,70 @@ public class Heartbeat implements Runnable{
 						heartbeatMessage = this.serverMessage.heartbeatMessage(ServerState.getServerState().getServerName());
 						
 							Sender.sendRespond(ServerState.getServerState().getServerByName(ServerState.getServerState().getLeaderServer().getServerName()).getServerSocketConnection(), heartbeatMessage);	
-							logger.info("heartbeat sent to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
+//							logger.info("heartbeat sent to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
 
 						
 					} catch (IOException e) {
+						this.running = false;
 						logger.info("Heartbeat sending Failed from "+ ServerState.getServerState().getServerName() + "to " + ServerState.getServerState().getLeaderServer().getServerName()+"(Leader)");
 						Runnable LeaderDown = new Heartbeat("LeaderDown");
 		                new Thread(LeaderDown).start();
 		                
 					} catch (InterruptedException e) {
+						this.running = false;
 						logger.error("Heartbeat request interval error");
 					
 					} catch (NullPointerException e) {
+						this.running = false;
 						logger.error(ServerState.getServerState().getLeaderServer().getServerName()+"(leader) is not connected yet to ["+ServerState.getServerState().getServerName()+"]");
 					}
 				}
 			}
+		break;
 		case "leaderdown":
-			ServerState.getServerState().removeSuspectServer(ServerState.getServerState().getLeaderServer().getServerName());
+			logger.debug("LEADER DOWN SERVER NAME" + ServerState.getServerState().getLeaderServer().getServerName());
+			String serveName = ServerState.getServerState().getLeaderServer().getServerName();
+			ServerState.getServerState().removeSuspectServer(serveName);
 			ServerState.getServerState().setLeaderServer(null);
-			try {
-				Thread.sleep(Constants.LEADER_DOWN_RECOGNITION_WAITING); // wait until all servers set as that leader is null
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(Constants.LEADER_DOWN_RECOGNITION_WAITING); // wait until all servers set as that leader is null
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			if(new HashSet<Boolean>(ServerState.getServerState().isInProgressLeaderElection().values()).size() == 1) { //check all are false
+//				
+//				ServerState.getServerState().setInProgressLeaderElection(ServerState.getServerState().getServerName(),true);
+//				sendProgressStatus();
+//				
+//				try {
+//					Thread.sleep(Constants.LEADER_DOWN_RECOGNITION_WAITING);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//				
+//				
+////				break;
+//			}
 			
-			if(new HashSet<Boolean>(ServerState.getServerState().isInProgressLeaderElection().values()).size() == 1) { //check all are false
-				
-				ServerState.getServerState().setInProgressLeaderElection(ServerState.getServerState().getServerName(),true);
-				sendProgressStatus();
-				
-				try {
-					Thread.sleep(Constants.LEADER_DOWN_RECOGNITION_WAITING);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				
-				Server newLeader = LeaderElector.getLeader();
-				ServerState.getServerState().setLeaderServer(newLeader);
-				
-				ServerState.getServerState().setInProgressLeaderElection(ServerState.getServerState().getServerName(),false);
-				sendProgressStatus();
-				break;
+			Server newLeader = LeaderElector.getLeader();				
+			ServerState.getServerState().setLeaderServer(newLeader);
+			logger.info("Assigned new leader "+ ServerState.getServerState().getLeaderServer().getServerName());
+			
+//			ServerState.getServerState().setInProgressLeaderElection(ServerState.getServerState().getServerName(),false);
+//			sendProgressStatus();
+			
+			// Start heart beat after leader election
+			if (!(ServerState.getServerState().getServerName().equals(newLeader.getServerName()))) {
+				logger.debug(ServerState.getServerState().getServerName()+ " sterted heartbeat");
+				Thread heartbeatThread = new Thread(new Heartbeat("heartbeat"));
+				logger.debug("Heartbeat thread "+heartbeatThread.getName());
+				heartbeatThread.start();
 			}
+            logger.debug("Current thread " +Thread.currentThread().getName());
+			Thread.currentThread().interrupt();
+			
+			break;
 		}
 	}
 	

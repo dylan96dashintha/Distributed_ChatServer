@@ -2,7 +2,12 @@ package Server;
 
 import java.io.IOException;
 import Messaging.Sender;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+
+import Heartbeat.Heartbeat;
 
 import java.util.ArrayList;
 
@@ -14,11 +19,14 @@ public class LeaderElector {
     private static ServerState currentServerState; 
 
 
+    private static final Logger logger = LogManager.getLogger(LeaderElector.class);
+    
     private LeaderElector() {
 	}
 
     //need review
     public static Server getLeader(){
+    	logger.debug("START LEADER ELECTION");
         currentServerState = ServerState.getServerState();
 
         Servers.clear();
@@ -58,10 +66,15 @@ public class LeaderElector {
         Server maxServer = LeaderElector.getMaxAvailablServer();
         JSONObject nominateMsg = LeaderElector.createElectionMessage("nomination", LeaderElector.currentServer);
         try {
-            sendElectionMessage(maxServer, nominateMsg);
+        	if (!(maxServer.getServerName().equals(currentServer.getServerName()))) {
+        		sendElectionMessage(maxServer, nominateMsg);
+        	}else {
+        		informIamCoordinatorMsg();
+        	}
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error("CAN'T SEND :"+e.getMessage());
+//            e.printStackTrace();
         }
         //nominate that server
         LeaderElector.availableServers.clear();//reset LeaderElector.availableServers
@@ -70,21 +83,27 @@ public class LeaderElector {
     }
 
     public static void processStartElectionMsg(JSONObject response){
+    	logger.debug("START: processStartElectionMsg()");
         String senderServerName = response.getString("senderServerName");
-        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         JSONObject answerElectionMsg = LeaderElector.createElectionMessage("answer_election", LeaderElector.currentServer);
+        logger.debug("processStartElectionMsg() "+ answerElectionMsg.toString());
         try {
             sendElectionMessage(senderServer,answerElectionMsg);
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	logger.error("ERROR: processStartElectionMsg()");
             e.printStackTrace();
         }
+        logger.debug("END: processStartElectionMsg()");
     }
 
     public static void processAnswerElectionMsg(JSONObject response){
+    	logger.debug("START: processAnswerElectionMsg()");
         String senderServerName = response.getString("senderServerName");
-        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         LeaderElector.availableServers.add(senderServer);    
+    	logger.debug("END: processAnswerElectionMsg()");
     }
 
     public static void processNominationMsg(JSONObject response){
@@ -94,8 +113,9 @@ public class LeaderElector {
 
     public static void processInformCoordinatorMsg(JSONObject response){
         String senderServerName = response.getString("senderServerName");
-        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         LeaderElector.currentLeader = senderServer;   
+        ServerState.getServerState().setLeaderServer(senderServer);
     }
 
     public static void serverRecovery(){
@@ -126,7 +146,7 @@ public class LeaderElector {
 
     public static void processIamUpMsg(JSONObject response){
         String senderServerName = response.getString("senderServerName");
-        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         JSONObject viewMsg = LeaderElector.createElectionMessage("view", LeaderElector.currentServer);
         try {
             sendElectionMessage(senderServer, viewMsg);
@@ -138,7 +158,7 @@ public class LeaderElector {
 
     public static void processViewMsg(JSONObject response){
         String senderServerName = response.getString("senderServerName");
-        Server senderServer = LeaderElector.currentServerState.getServerByName(senderServerName);
+        Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         LeaderElector.availableServers.add(senderServer);  
     }
 
@@ -157,19 +177,21 @@ public class LeaderElector {
 
     private static JSONObject createElectionMessage(String electionMsgType, Server currentServer){
         JSONObject msg = new JSONObject();
-        msg.put("type", "election").put("electionMsgType",electionMsgType).put("senderServerName",currentServer.getServerName());
+        msg.put("type", "election").put("electionMsgType",electionMsgType).put("senderServerName",ServerState.getServerState().getServerName());
         return msg;
     }
 
     private static Server getMaxAvailablServer(){
         Server maxServer = currentServer;
         String maxServerName = currentServer.getServerName();
+        logger.debug("CURRENT "+ maxServer.getServerName());
         if(LeaderElector.availableServers.size()>0){
             //select server with maximum id
             for (Server server: LeaderElector.availableServers){
                 if((server.getServerName()).compareTo(maxServerName)>0){
                     maxServerName = server.getServerName();
                     maxServer = server;
+                    logger.debug("OTHER"+server.toString());
                 }
             }
         }

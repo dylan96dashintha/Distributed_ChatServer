@@ -145,13 +145,17 @@ public class Server2ServerConnection extends Thread{
 
 				case "inform_coordinator":
 					LeaderElector.processInformCoordinatorMsg(response);
+					break;
 
 				case "IamUp":
 					LeaderElector.processIamUpMsg(response);
+					break;
 					
 				case "view":
 					LeaderElector.processViewMsg(response);
+					break;
 			}
+			break;
 		case "heartbeat":
 			Heartbeat.updateHeartbeat(response);
 			break;
