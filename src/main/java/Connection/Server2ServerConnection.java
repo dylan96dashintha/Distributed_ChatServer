@@ -175,7 +175,6 @@ public class Server2ServerConnection extends Thread{
 		case "notifyserverdown":
 			ConsensusJob.notifyServerDownMessageHandler(response);
 			break;
-		}
 		
 		case "deleteroom":
 			this.serverHandeler.deleteChatroom(response);
