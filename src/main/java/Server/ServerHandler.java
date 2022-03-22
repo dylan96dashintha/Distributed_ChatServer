@@ -25,7 +25,6 @@ public class ServerHandler {
 		
 		server.setServerSocketConnection(socket);
 		ServerState.getServerState().replaceServerbByName(server);
-		logger.debug("LISTENING....." + ServerState.getServerState().getServersHashmap().toString());
 		
 		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+server.getServerName());
 		JSONObject obj = new JSONObject();

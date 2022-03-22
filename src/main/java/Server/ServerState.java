@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -298,7 +299,6 @@ public class ServerState {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {
 			if (!(entry.getKey().equals(this.serverName))) {
 				try {
-					logger.debug("check entry server :: "+ entry.getValue().getServerName());
 					Socket socket = new Socket(entry.getValue().getServerAddress(), entry.getValue().getServerPort());
 //					logger.debug("socket :: "+ socket.toString());
 					logger.info("Server "+ this.serverName + " is connected to Server "+entry.getValue().getServerName()

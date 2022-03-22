@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,16 +48,15 @@ public class Server2ServerConnection extends Thread{
 
 	@Override
 	public void run() {
-		try {
-
-			while (true) {
+		while (true) {
+			try {
 				String line = this.scanner.nextLine();				
 				handleResponse(line);
-				
+			}catch(NoSuchElementException j) {
+//				logger.debug("this is it");
+				break;
 			}
-
-		} catch (Exception e) {
-			System.out.println(e);
+			
 		}
 	}
 	

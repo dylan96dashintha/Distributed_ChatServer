@@ -83,11 +83,11 @@ public class LeaderElector {
     }
 
     public static void processStartElectionMsg(JSONObject response){
-    	logger.debug("START: processStartElectionMsg()");
+//    	logger.debug("START: processStartElectionMsg()");
         String senderServerName = response.getString("senderServerName");
         Server senderServer = ServerState.getServerState().getServerByName(senderServerName);
         JSONObject answerElectionMsg = LeaderElector.createElectionMessage("answer_election", LeaderElector.currentServer);
-        logger.debug("processStartElectionMsg() "+ answerElectionMsg.toString());
+//        logger.debug("processStartElectionMsg() "+ answerElectionMsg.toString());
         try {
             sendElectionMessage(senderServer,answerElectionMsg);
         } catch (IOException e) {
@@ -95,7 +95,7 @@ public class LeaderElector {
         	logger.error("ERROR: processStartElectionMsg()");
             e.printStackTrace();
         }
-        logger.debug("END: processStartElectionMsg()");
+//        logger.debug("END: processStartElectionMsg()");
     }
 
     public static void processAnswerElectionMsg(JSONObject response){
