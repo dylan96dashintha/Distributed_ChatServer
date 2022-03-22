@@ -24,11 +24,13 @@ public class ChatRoom {
 	
 	
 	public ConcurrentHashMap<String, ChatRoom> getChatRoomHashMap() {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		return chatRoomHashMap;
 	}
 
 
 	public ConcurrentLinkedQueue<User> getUserListInRoom(String roomId) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom;
 		if (roomId.startsWith("MainHall")) {
 			chatRoom = chatRoomHashMap.get("MainHall");
@@ -44,6 +46,7 @@ public class ChatRoom {
 	}
 	
 	public void setChatRoomHashMap(ConcurrentHashMap<String, ChatRoom> chatRoomHashMap) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		this.chatRoomHashMap = chatRoomHashMap;
 	}
 
@@ -76,6 +79,7 @@ public class ChatRoom {
 	}
 	
 	public boolean isUnique() {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		//TODO - Done
 		//Get the global chatroomhashmap and check the uniqueness
 		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
@@ -87,6 +91,7 @@ public class ChatRoom {
 	}
 	
 	public boolean isOwnerVirgin() {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		boolean isOwner = true; 
 		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
 			if ((chatRoom.getOwner()).equals(owner)) {
@@ -102,18 +107,22 @@ public class ChatRoom {
 	
 	public void joinRoom(User user) {
 		userListInRoom.add(user);
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 		
 	}
 	
 	public ConcurrentLinkedQueue<User> deleteRoom(String chatRoom) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoomBeforeDelete = chatRoomHashMap.get(chatRoom);
 		ConcurrentLinkedQueue<User> userListDeletedRoom = chatRoomBeforeDelete.getUserListInRoom();
 		chatRoomHashMap.remove(chatRoom);
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 		return userListDeletedRoom;
 		
 	}
 	
 	public ChatRoom isUserOwnRoom(String owner) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoomQuit = null;
 		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
 			if ((chatRoom.getOwner()).equals(owner)) {
@@ -124,6 +133,7 @@ public class ChatRoom {
 	}
 	
 	public boolean isUserOwnRoomReturnBool(String owner) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		boolean isUserOwn = false;
 		for (ChatRoom chatRoom: chatRoomHashMap.values()) {
 			if ((chatRoom.getOwner()).equals(owner)) {
@@ -134,16 +144,19 @@ public class ChatRoom {
 	}
 	
 	public void addUsersToMainHall(User user) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom = chatRoomHashMap.get("MainHall");
 		chatRoom.joinRoom(user);
 	}
 	
 	public void addUsersToChatRoom(User user, String roomId) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom = chatRoomHashMap.get(roomId);
 		chatRoom.joinRoom(user);
 	}
 	
 	public void removeUsersFromChatRoom (User user, String roomId) {
+		chatRoomHashMap = ServerState.getServerState().getChatRoomHashmap();
 		ChatRoom chatRoom;
 		if (roomId.startsWith("MainHall")) {
 			chatRoom = chatRoomHashMap.get("MainHall");
@@ -159,5 +172,6 @@ public class ChatRoom {
 
 	public void setUserListInRoom(ConcurrentLinkedQueue<User> userListInRoom) {
 		this.userListInRoom = userListInRoom;
+		ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
 	}
 }

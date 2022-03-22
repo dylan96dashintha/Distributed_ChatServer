@@ -26,7 +26,7 @@ public class LeaderChannel {
 		ServerState currentServer = ServerState.getServerState();
 		Server leaderServer = currentServer.getServerByName(currentServer.getLeaderServer().getServerName());
 		if (currentServer.getServerName().equals(currentServer.getLeaderServer().getServerName())) {
-			logger.info("Same Leader");
+			logger.debug("Same Leader");
 			return true;
 		} else if (leaderServer.getServerSocketConnection() != null) {
 			
@@ -41,12 +41,12 @@ public class LeaderChannel {
 				return false;
 			}
 			int c = 0;
-			while ((!(ServerState.getServerState().checkChatRoomRequestCompleted(id))) || c>20) {
+			while ((!(ServerState.getServerState().checkChatRoomRequestCompleted(id))) && c<20) {
 				try {
-					logger.debug("in loop");
+
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
-					logger.debug(c);
+
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -101,10 +101,10 @@ public class LeaderChannel {
 			int c = 0;
 			while ((!(ServerState.getServerState().checkIdentityRequestCompleted(id))) && c<20) {
 				try {
-					logger.debug("in loop");
+		
 					TimeUnit.MILLISECONDS.sleep(200);
 					c++;
-					logger.debug(c);
+
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,6 +17,7 @@ import org.json.JSONObject;
 import ClientHandler.ClientHandler;
 import ClientHandler.User;
 import Connection.Server2ServerConnection;
+import Gossiping.GossipingHandler;
 import Messaging.Sender;
 
 public class ServerState {
@@ -102,7 +102,7 @@ public class ServerState {
 		ChatRoom chatRoom = new ChatRoom();
 	    chatRoom.createChatRoom(mainHall, "");
 	    chatRoomHashmap.put("MainHall", chatRoom);
-		
+
 	    createServer2ServerConnection();
 	    
 		return serverState;
@@ -114,6 +114,16 @@ public class ServerState {
 
 	public void setChatRoomHashmap(ConcurrentHashMap<String, ChatRoom> chatRoomHashmap) {
 		this.chatRoomHashmap = chatRoomHashmap;
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = this.otherServersChatRooms.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName))
+		    	iterator.remove();
+		}
+		
+		for (ConcurrentHashMap.Entry<String, ChatRoom> e: chatRoomHashmap.entrySet()) {
+			this.otherServersChatRooms.put(e.getValue().getRoomName(), this.serverName);
+		}
 	}
 
 	public String getServerName() {
@@ -153,6 +163,15 @@ public class ServerState {
 	}
 
 	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersUsers.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName)) {
+		    	iterator.remove();
+		    }
+		}
+		for (User user : identityList) {
+			otherServersUsers.put(user.getName(), this.serverName);
+		}
 		this.identityList = identityList;
 	}
 	
