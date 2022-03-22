@@ -23,13 +23,17 @@ public class ServerHandler {
 	
 	private static final Logger logger = LogManager.getLogger(ServerHandler.class);
 	
-	public void newServerConnection(Socket socket, String serveName) throws IOException {
-		Server server = ServerState.getServerState().getServerByName(serveName);
+	public void newServerConnection(Socket socket, JSONObject response) throws IOException {
+		
+		Server server = new Server(response.getString("server"), response.getString("server-address"), response.getInt("server-port"), response.getInt("client-port"));
+		
 		server.setServerSocketConnection(socket);
 		ServerState.getServerState().replaceServerbByName(server);
-		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+serveName);
+		
+		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+server.getServerName());
 		JSONObject obj = new JSONObject();
-		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName());
+    
+		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName()).put("leader-server",ServerState.getServerState().getLeaderServer().getServerName());
 		ArrayList<String> chatrooms = new ArrayList<String>();
 		for (ConcurrentHashMap.Entry<String, ChatRoom> e: ServerState.getServerState().getChatRoomHashmap().entrySet()) {
 			chatrooms.add(e.getKey());
@@ -53,7 +57,10 @@ public class ServerHandler {
 	
 	public void newServerConnectionConfirm(JSONObject response) {
 		if (response.getBoolean("connected")) {
+			Server leaderServer = ServerState.getServerState().getServerByName(response.getString("leader-server"));
+			ServerState.getServerState().setLeaderServer(leaderServer);
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+ response.getString("server"));
+
 			//Set chat rooms
 			JSONArray chatrooms = response.getJSONArray("chatrooms");
 			String server = response.getString("server");
@@ -95,11 +102,7 @@ public class ServerHandler {
 		ServerState.getServerState().setOtherServersChatRooms(rooms);
 		ServerState.getServerState().addChatRoomRequestID(response.getString("id"));
 	}
-	
-	
-	
-	
-	
+
 	public void getGlobalIdentities(Socket socket, JSONObject response) throws IOException {
 		JSONObject msg = new JSONObject();
 		msg.put("type", "global-identity-response").put("id", response.getString("id"));

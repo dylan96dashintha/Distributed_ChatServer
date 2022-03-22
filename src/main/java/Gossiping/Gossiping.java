@@ -27,7 +27,7 @@ public class Gossiping {
 
 	private static final Logger logger = LogManager.getLogger(Gossiping.class);
 
-	int serverCountForGossip = 2;
+	int serverCountForGossip = 1;
 
 	public JSONObject createChatRoomGossipingMsg() {
 		JSONObject msg = new JSONObject();
@@ -225,4 +225,15 @@ public class Gossiping {
 		return randomServers;
 
 	}
+
+	public void sendServerBroadcast(JSONObject obj, ArrayList<Server> serverList){
+        for (Server server : serverList) {
+        	try {
+				Sender.sendRespond(server.getServerSocketConnection(), obj);
+			} catch (IOException e) {
+				logger.debug("sendServerBroadcast is failed to : "+ server.getServerName());
+				ServerState.getServerState().getSuspectList().put(server.getServerName(), "SUSPECTED");
+			}
+        }
+    }
 }
