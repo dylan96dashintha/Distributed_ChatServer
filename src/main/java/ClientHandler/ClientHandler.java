@@ -210,6 +210,7 @@ public class ClientHandler {
 					// Broadcast roomchange message to teh clients that are members of the chat room
 					String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
+					newIdentity.getUserList().getUser().setRoomName(roomId);
 
 					try {
 						logger.debug("Inside createroom try");
@@ -218,6 +219,7 @@ public class ClientHandler {
 						chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomId);
 						chatRoom.setChatRoomHashMap(chatRoomHashMap);
 						ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
+						
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -276,7 +278,7 @@ public class ClientHandler {
 						Sender.sendNotificationChatroom(roomIdJoinRoom, joinRoomRes, username);
 
 						Sender.sendRespond(socket, joinRoomRes);
-						chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
+						//chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
 
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -477,7 +479,8 @@ public class ClientHandler {
 		if (owner.equals(identityDelRoom)) {
 
 			ConcurrentLinkedQueue<User> userList = chatRoom.deleteRoom(roomIdDelRoom);
-			ConcurrentLinkedQueue <User> UserListMainHall = chatRoom.getUserListInRoom(mainHall);
+			Object[] UserListMainHall = chatRoom.getUserListInRoom(mainHall).toArray();
+			
 			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
 			// TODO
 			// send delRoomRes to other servers
@@ -509,7 +512,9 @@ public class ClientHandler {
 
 			// RoomChangeDelRoomRes message to client of the deleted room
 			try {
+				
 				for (JSONObject jsn : resList) {
+					
 					Sender.sendMessageToUserList(userList, jsn);
 					Sender.sendMessageToUserList(UserListMainHall, jsn);
 				}
@@ -555,4 +560,6 @@ public class ClientHandler {
 			e.printStackTrace();
 		}
 	}
+	
+	
 }

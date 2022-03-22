@@ -58,6 +58,19 @@ public class Sender {
 
 	}
 	
+	public static void sendMessageToUserList(Object[] userList, JSONObject jsonObj)
+			throws IOException {
+
+		//logger.debug("sendMessageToUserList() " + userList.toString());
+
+		for (Object user : userList) {
+			DataOutputStream opStream = new DataOutputStream(((User)user).getUserSocket().getOutputStream());
+			opStream.write((jsonObj.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+			opStream.flush();
+		}
+
+	}
+	
 	public static void sendNotificationChatroom(String chatRoomName, JSONObject jsonObj,String username) throws IOException {
 		
 		
