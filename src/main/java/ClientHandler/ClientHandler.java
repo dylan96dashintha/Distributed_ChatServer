@@ -369,7 +369,7 @@ public class ClientHandler {
 			if (isUserDelRoom) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdDelRoom);
 				String owner = chatRoomJoinRoom.getOwner();
-				deleteRoom(owner, identityDelRoom, roomIdDelRoom);
+				deleteRoom(owner, identityDelRoom, roomIdDelRoom, false);
 			} else {
 				JSONObject delRoomUnsucess = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom)
 						.put("type", "deleteroom");
@@ -423,6 +423,7 @@ public class ClientHandler {
 
 			break;
 		case "quit":
+			logger.debug("case quit");
 			String identityQuit = newIdentity.getName();
 			JSONObject roomChangeQuit;
 			boolean isUser = chatRoom.isUserOwnRoomReturnBool(identityQuit);
@@ -436,8 +437,9 @@ public class ClientHandler {
 				boolean isUserQuit = newIdentity.removeUser(newIdentity.getUserList().getUser());
 				// TODO - Done
 				// Server closes the connection
-				deleteRoom(identityQuit, identityQuit, chatRoomQuit.getRoomName());
+				deleteRoom(identityQuit, identityQuit, chatRoomQuit.getRoomName(), false);
 			}
+			
 			try {
 				Sender.sendRespond(socket, roomChangeQuit);
 			} catch (IOException e) {
@@ -446,7 +448,28 @@ public class ClientHandler {
 			}
 
 			break;
+		case "quitctrl":
+			logger.debug("case quit-ctrl");
+			String identityQuitCtrl = newIdentity.getName();
+			JSONObject roomChangeQuitCtrl;
+			boolean isUserCtrl = chatRoom.isUserOwnRoomReturnBool(identityQuitCtrl);
+			ChatRoom chatRoomQuitCtrl = chatRoom.isUserOwnRoom(identityQuitCtrl);
+			chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), newIdentity.getUserList().getUser().getRoomName());
+			if (!isUserCtrl) {
+				boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+				//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, newIdentity.getUserList().getUser().getRoomName(), "");
+			} else {
+				//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), "");
+
+				boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+				// TODO - Done
+				// Server closes the connection
+				deleteRoom(identityQuitCtrl, identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), true);
+			}
+			
+			break;
 		}
+		
 	}
 
 	public JSONObject changeRoom(String identity, String formerRoom, String newRoom) {
@@ -456,7 +479,7 @@ public class ClientHandler {
 		return roomChangeRes;
 	}
 
-	public void deleteRoom(String owner, String identityDelRoom, String roomIdDelRoom) {
+	public void deleteRoom(String owner, String identityDelRoom, String roomIdDelRoom, boolean isCtrl) {
 		JSONObject delRoomRes;
 		JSONObject delRoomUnsucessRes;
 		JSONObject delRoomClientRes;
@@ -512,7 +535,10 @@ public class ClientHandler {
 			}
 			delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
-				Sender.sendRespond(socket, delRoomClientRes);
+				if (!isCtrl) {
+					Sender.sendRespond(socket, delRoomClientRes);
+				}
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -525,7 +551,9 @@ public class ClientHandler {
 		if (!isDelSuccess) {
 			delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
-				Sender.sendRespond(socket, delRoomUnsucessRes);
+				if (!isCtrl) {
+					Sender.sendRespond(socket, delRoomUnsucessRes);	
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block.
 				e.printStackTrace();
