@@ -338,11 +338,11 @@ public class ServerState {
 					s2sc.start();
 				}catch (UnknownHostException u)
 		        {
-		            logger.error(u.getMessage());
+		            logger.debug(u.getMessage());
 		        }
 		        catch(IOException i)
 		        {
-		            logger.error(i.getMessage());
+		            logger.debug(i.getMessage());
 		        }
 				
 			}
