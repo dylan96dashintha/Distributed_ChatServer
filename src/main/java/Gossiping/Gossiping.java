@@ -203,6 +203,7 @@ public class Gossiping {
 	}
 
 	public ArrayList<Server> getRandomServers() {
+		int serverCount = serverCountForGossip;
 		ConcurrentHashMap<String, Server> currentServers = ServerState.getServerState().getServersHashmap();
 		String[] servers = new String[currentServers.size()];
 		int j = 0;
@@ -210,12 +211,15 @@ public class Gossiping {
 			servers[j] = s;
 			j++;
 		}
-
+		
+		if (serverCount >= servers.length) {
+			serverCount = servers.length - 1;
+		}
 		
 		String currentServerName = ServerState.getServerState().getServerName();
 		ArrayList<Server> randomServers = new ArrayList<Server>();
 		int i = 0;
-		while (i < serverCountForGossip) {
+		while (i < serverCount) {
 			String server = servers[new Random().nextInt(servers.length)];
 			if ((!(server.equals(currentServerName))) && (!(randomServers.contains(currentServers.get(server))))) {
 				i++;
