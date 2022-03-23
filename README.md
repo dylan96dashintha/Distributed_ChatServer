@@ -1,8 +1,7 @@
 # Distributed Chat Server System
 Source code for chat servers that can handle client request and server to server communication are in this repo
 
-## Execute Chat Server
-### Run in local machine
+### Run Chat Server in local machine
 1. Executable server file as `server.jar` and server configuration file as `conf.txt` are provided.
 2. Open a command promt in directory which contain `server.jar`.
 3. Start server using code
