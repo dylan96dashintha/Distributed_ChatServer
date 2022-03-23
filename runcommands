@@ -1,7 +1,7 @@
 run servers
-java -jar ChatServer-0.0.1-jar-with-dependencies.jar s1 conf.txt
-java -jar ChatServer-0.0.1-jar-with-dependencies.jar s2 conf.txt
-java -jar ChatServer-0.0.1-jar-with-dependencies.jar s3 conf.txt
+java -jar server.jar s1 conf.txt
+java -jar server.jar s2 conf.txt
+java -jar server.jar s3 conf.txt
 
 run client
 java -jar client.jar -h localhost -p 4444 -i Adel
