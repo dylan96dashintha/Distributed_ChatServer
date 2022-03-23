@@ -6,11 +6,14 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import ClientHandler.ClientHandler;
 
 public class ClientServerConnection extends Thread {
+	private static final Logger logger = LogManager.getLogger(ClientServerConnection.class);
 	InputStream inputFromClient;
 	Scanner scanner;
 	Socket socket;
@@ -34,13 +37,17 @@ public class ClientServerConnection extends Thread {
 		try {
 
 	    while (true) {
+	    	
 	        String line = scanner.nextLine();
-	        System.out.println("Line == "+line);
 	        clientHandler.getTypeFunctionality(getType(line));
 	        
 	    }
 	   // ss.close();  
-		}catch(Exception e){System.out.println(e);
+		}catch(Exception e){
+		//System.out.println(e);
+		logger.debug("CTRL+C");
+		clientHandler.getTypeFunctionality(getType("{\"type\": \"quitctrl\"}"));
+		
 		}
 		
 	}

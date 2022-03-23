@@ -47,16 +47,22 @@ public class ClientHandler {
 		mainHall = chatRoomMainHall.getRoomName();
 		chatRoom = new ChatRoom();
 		gossipingHandle = new GossipingHandler();
-		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+
+
 
 	}
 
 	public void getTypeFunctionality(JSONObject jsnObj) {
+//		SUDESH - ADDED
+//		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
+//		SUDESH - REMOVED
+//		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		this.type = jsnObj.getString("type");
 		this.jsnObj = jsnObj;
 		switch (type) {
 
 		case "newidentity":
+			
 			identityName = jsnObj.getString("identity");
 			newIdentity = new NewIdentity(identityName, socket);
 			boolean isApproved = newIdentity.validation();
@@ -86,6 +92,7 @@ public class ClientHandler {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			break;
 
 		case "message":
@@ -109,22 +116,30 @@ public class ClientHandler {
 		case "list":
 			JSONObject resList;
 			List roomList = new ArrayList<String>();
-			try {
-				gossipingHandle.sendChatRoomCreateGossip();
-			} catch (IOException e3) {
-				// TODO Auto-generated catch block
-				e3.printStackTrace();
-			}
+//			JSONObject req = new JSONObject().put("type", "gossip-chatrooms-request");
+//			for (ConcurrentHashMap.Entry<String, Server> e: ServerState.getServerState().getServersHashmap().entrySet()) {
+//				try {
+//					Sender.sendRespond(e.getValue().getServerSocketConnection(), req);
+//				} catch (IOException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+//			}
+			
 			// TODO - Done
 			// Global chat rooms to be applied here
-			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+//			SUDESH - REMOVED
+//			otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+//			SUDESH - ADDED
+			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 			for (String roomNameList : otherServersChatRooms.keySet()) {
 				logger.debug("List :: otherserverrooms :: "+roomNameList);
 				roomList.add(roomNameList);
 			}
-			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
-				roomList.add(chatRoom.getRoomName());
-			}
+//			SUDESH - REMOVED
+//			for (ChatRoom chatRoom : chatRoomHashMap.values()) {
+//				roomList.add(chatRoom.getRoomName());
+//			}
 			resList = new JSONObject().put("type", "roomlist").put("rooms", roomList);
 			logger.debug("Room List: " + resList);
 			try {
@@ -175,7 +190,7 @@ public class ClientHandler {
 //					for (ConcurrentHashMap.Entry<String, String> e : seett22.entrySet()) {
 //						logger.debug("Server " + e.getValue() + " user " + e.getKey());
 //					}
-
+					
 					chatRoomHashMap.put(roomId, chatRoom);
 					chatRoom.setChatRoomHashMap(chatRoomHashMap);
 					ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
@@ -197,12 +212,16 @@ public class ClientHandler {
 					// Broadcast roomchange message to teh clients that are members of the chat room
 					String formerRoomName = newIdentity.getUserList().getUser().getRoomName();
 					createRoomRoomChangeRes = changeRoom(newIdentity.getName(), formerRoomName, roomId);
+					newIdentity.getUserList().getUser().setRoomName(roomId);
 
 					try {
 						logger.debug("Inside createroom try");
 						Sender.sendMessageChatroom(formerRoomName, createRoomRoomChangeRes);
 						chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomName);
 						chatRoom.addUsersToChatRoom(newIdentity.getUserList().getUser(), roomId);
+						chatRoom.setChatRoomHashMap(chatRoomHashMap);
+						ServerState.getServerState().setChatRoomHashmap(chatRoomHashMap);
+						
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -213,7 +232,7 @@ public class ClientHandler {
 				} else {
 					logger.debug("create room failed");
 					createRoomRes = new JSONObject().put("approved", "false").put("roomid", roomId).put("type",
-							"createrroom");
+							"createroom");
 					try {
 						Sender.sendRespond(socket, createRoomRes);
 					} catch (IOException e) {
@@ -226,6 +245,7 @@ public class ClientHandler {
 
 			break;
 		case "joinroom":
+			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 			String roomIdJoinRoom = jsnObj.getString("roomid");
 			String identityJoinRoom = newIdentity.getName();
 			JSONObject joinRoomRes;
@@ -241,8 +261,8 @@ public class ClientHandler {
 					// joinRoomRes = new JSONObject().put("type", "roomchange").put("identity",
 					// identityJoinRoom).put("former", mainHall).put("roomid", roomIdJoinRoom);
 					joinRoomRes = changeRoom(identityJoinRoom, formerRoomJoinRoom, roomIdJoinRoom);
+					chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), newIdentity.getUserList().getUser().getRoomName());
 					newIdentity.getUserList().getUser().setRoomName(roomIdJoinRoom);
-
 					logger.debug("JoinRoom :: " + joinRoomRes);
 					// TODO - Done
 					// send the joinRoomRes to members of the former chat room, members of the new
@@ -261,7 +281,7 @@ public class ClientHandler {
 						Sender.sendNotificationChatroom(roomIdJoinRoom, joinRoomRes, username);
 
 						Sender.sendRespond(socket, joinRoomRes);
-						chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
+						//chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), formerRoomJoinRoom);
 
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -365,7 +385,7 @@ public class ClientHandler {
 			if (isUserDelRoom) {
 				ChatRoom chatRoomJoinRoom = chatRoomHashMap.get(roomIdDelRoom);
 				String owner = chatRoomJoinRoom.getOwner();
-				deleteRoom(owner, identityDelRoom, roomIdDelRoom);
+				deleteRoom(owner, identityDelRoom, roomIdDelRoom, false);
 			} else {
 				JSONObject delRoomUnsucess = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom)
 						.put("type", "deleteroom");
@@ -377,20 +397,7 @@ public class ClientHandler {
 				}
 			}
 			
-			//Notify other servers
-			for (ConcurrentHashMap.Entry<String, Server> e : ServerState.getServerState().getServersHashmap().entrySet()) {
-				JSONObject obj = new JSONObject()
-						.put("type" , "deleteroom")
-						.put("serverid", ServerState.getServerState().getServerName())
-						.put("roomid", roomIdDelRoom);
-				try {
-					if (!(e.getValue().getServerName().equals(ServerState.getServerState().getServerName())))
-						Sender.sendRespond(e.getValue().getServerSocketConnection(), obj);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
+			
 			
 //			
 //			JSONObject delRoomRes;
@@ -432,6 +439,7 @@ public class ClientHandler {
 
 			break;
 		case "quit":
+			logger.debug("case quit");
 			String identityQuit = newIdentity.getName();
 			JSONObject roomChangeQuit;
 			boolean isUser = chatRoom.isUserOwnRoomReturnBool(identityQuit);
@@ -445,8 +453,9 @@ public class ClientHandler {
 				boolean isUserQuit = newIdentity.removeUser(newIdentity.getUserList().getUser());
 				// TODO - Done
 				// Server closes the connection
-				deleteRoom(identityQuit, identityQuit, chatRoomQuit.getRoomName());
+				deleteRoom(identityQuit, identityQuit, chatRoomQuit.getRoomName(), false);
 			}
+			
 			try {
 				Sender.sendRespond(socket, roomChangeQuit);
 			} catch (IOException e) {
@@ -455,7 +464,34 @@ public class ClientHandler {
 			}
 
 			break;
+		case "quitctrl":
+			try {
+				logger.debug("case quit-ctrl");
+				String identityQuitCtrl = newIdentity.getName();
+				JSONObject roomChangeQuitCtrl;
+				boolean isUserCtrl = chatRoom.isUserOwnRoomReturnBool(identityQuitCtrl);
+				ChatRoom chatRoomQuitCtrl = chatRoom.isUserOwnRoom(identityQuitCtrl);
+				chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), newIdentity.getUserList().getUser().getRoomName());
+				if (!isUserCtrl) {
+					boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+					//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, newIdentity.getUserList().getUser().getRoomName(), "");
+				} else {
+					//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), "");
+
+					boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+					// TODO - Done
+					// Server closes the connection
+					deleteRoom(identityQuitCtrl, identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), true);
+				}
+				
+
+			} catch (Exception e) {
+				// TODO: handle exception
+				logger.debug("Exception in ctrlc");
+			}
+			break;
 		}
+		
 	}
 
 	public JSONObject changeRoom(String identity, String formerRoom, String newRoom) {
@@ -465,7 +501,7 @@ public class ClientHandler {
 		return roomChangeRes;
 	}
 
-	public void deleteRoom(String owner, String identityDelRoom, String roomIdDelRoom) {
+	public void deleteRoom(String owner, String identityDelRoom, String roomIdDelRoom, boolean isCtrl) {
 		JSONObject delRoomRes;
 		JSONObject delRoomUnsucessRes;
 		JSONObject delRoomClientRes;
@@ -475,10 +511,25 @@ public class ClientHandler {
 		if (owner.equals(identityDelRoom)) {
 
 			ConcurrentLinkedQueue<User> userList = chatRoom.deleteRoom(roomIdDelRoom);
+			Object[] UserListMainHall = chatRoom.getUserListInRoom(mainHall).toArray();
+			
 			delRoomRes = new JSONObject().put("roomid", roomIdDelRoom).put("serverid", serverId).put("type", "deleteroom");
 			// TODO
 			// send delRoomRes to other servers
-			
+			//Notify other servers
+			for (ConcurrentHashMap.Entry<String, Server> e : ServerState.getServerState().getServersHashmap().entrySet()) {
+//				JSONObject obj = new JSONObject()
+//						.put("type" , "deleteroom")
+//						.put("serverid", ServerState.getServerState().getServerName())
+//						.put("roomid", roomIdDelRoom);
+				try {
+					if (!(e.getValue().getServerName().equals(ServerState.getServerState().getServerName())))
+						Sender.sendRespond(e.getValue().getServerSocketConnection(), delRoomRes);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 			for (User user : userList) {
 				RoomChangeDelRoomRes = changeRoom(user.getName(), roomIdDelRoom, mainHall);
 				resList.add(RoomChangeDelRoomRes);
@@ -493,9 +544,11 @@ public class ClientHandler {
 
 			// RoomChangeDelRoomRes message to client of the deleted room
 			try {
+				
 				for (JSONObject jsn : resList) {
+					
 					Sender.sendMessageToUserList(userList, jsn);
-					Sender.sendMessageChatroom(mainHall, jsn);
+					Sender.sendMessageToUserList(UserListMainHall, jsn);
 				}
 
 			} catch (IOException e1) {
@@ -504,7 +557,10 @@ public class ClientHandler {
 			}
 			delRoomClientRes = new JSONObject().put("approved", "true").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
-				Sender.sendRespond(socket, delRoomClientRes);
+				if (!isCtrl) {
+					Sender.sendRespond(socket, delRoomClientRes);
+				}
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -517,7 +573,9 @@ public class ClientHandler {
 		if (!isDelSuccess) {
 			delRoomUnsucessRes = new JSONObject().put("approved", "false").put("roomid", roomIdDelRoom).put("type", "deleteroom");
 			try {
-				Sender.sendRespond(socket, delRoomUnsucessRes);
+				if (!isCtrl) {
+					Sender.sendRespond(socket, delRoomUnsucessRes);	
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block.
 				e.printStackTrace();
@@ -539,4 +597,6 @@ public class ClientHandler {
 			e.printStackTrace();
 		}
 	}
+	
+	
 }

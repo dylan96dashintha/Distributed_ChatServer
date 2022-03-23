@@ -5,13 +5,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.json.JSONObject;
+
 import ClientHandler.ClientHandler;
 import ClientHandler.User;
 import Connection.Server2ServerConnection;
@@ -30,10 +32,16 @@ public class ServerState {
 	
 //	private Server currentServer;
 	private Server leaderServer;
+
+	private AtomicBoolean ongoingConsensus = new AtomicBoolean(false);
 	
 	private ConcurrentLinkedQueue<String> chatRoomsRequestIDs = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> identityRequestIDs = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> gossipingIDs = new ConcurrentLinkedQueue<String>();
+	private ConcurrentHashMap<String, Integer> heartbeatCountList = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, String> suspectList = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, String> previousHeartbeatHashmap = new ConcurrentHashMap<>();
 	
 	private static ServerState serverState;
 	
@@ -41,9 +49,9 @@ public class ServerState {
 	private ConcurrentHashMap<String, ChatRoom> chatRoomHashmap = new ConcurrentHashMap<>();
 	private  ConcurrentLinkedQueue<User> identityList = new ConcurrentLinkedQueue<>();
 	
-	private ConcurrentHashMap<String, String> otherServersChatRooms = new ConcurrentHashMap<String, String>();
+	private static ConcurrentHashMap<String, String> otherServersChatRooms = new ConcurrentHashMap<String, String>();
 //	otherServersChatRooms<ChatroomName, server_name>
-	private ConcurrentHashMap<String, String> otherServersUsers = new ConcurrentHashMap<String, String>();
+	private static ConcurrentHashMap<String, String> otherServersUsers = new ConcurrentHashMap<String, String>();
 //	otherServersUsers<user_identity, server_name>
 	
 	private ServerState() {}
@@ -86,7 +94,7 @@ public class ServerState {
 											server.getInt("server-port"),
 											server.getInt("client-port") );
 			}
-			
+						
 		}
 	
 		//create a mainhall room
@@ -106,6 +114,16 @@ public class ServerState {
 
 	public void setChatRoomHashmap(ConcurrentHashMap<String, ChatRoom> chatRoomHashmap) {
 		this.chatRoomHashmap = chatRoomHashmap;
+		
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = this.otherServersChatRooms.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName))
+		    	iterator.remove();
+		}
+		
+		for (ConcurrentHashMap.Entry<String, ChatRoom> e: chatRoomHashmap.entrySet()) {
+			this.otherServersChatRooms.put(e.getValue().getRoomName(), this.serverName);
+		}
 	}
 
 	public String getServerName() {
@@ -145,6 +163,15 @@ public class ServerState {
 	}
 
 	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersUsers.entrySet().iterator();
+		while (iterator.hasNext()) {
+		    if (iterator.next().getValue().equals(this.serverName)) {
+		    	iterator.remove();
+		    }
+		}
+		for (User user : identityList) {
+			otherServersUsers.put(user.getName(), this.serverName);
+		}
 		this.identityList = identityList;
 	}
 	
@@ -214,18 +241,95 @@ public class ServerState {
 	public void addGossipingID(String id) {
 		this.gossipingIDs.add(id);
 	}
+	
+	public ConcurrentHashMap<String, Integer> getHeartbeatCountList() {
+		return heartbeatCountList;
+	}
+	
+	public synchronized void removeServer(String serverName) {
+		serversHashmap.remove(serverName);
+	}
+	
+    public synchronized void removeServerInCountList(String serverName) {
+        heartbeatCountList.remove(serverName);
+    }
+    
+    public synchronized void removeServerInSuspectList(String serverName) {
+        suspectList.remove(serverName);
+    }
 
-
+    public ConcurrentHashMap<String, String> getSuspectList() {
+        return suspectList;
+    }
+    
+    public AtomicBoolean onGoingConsensus() {
+        return ongoingConsensus;
+    }
+    
+    public ConcurrentHashMap<String, Integer> getVoteSet() {
+        return voteSet;
+    }
+    
+    public ConcurrentHashMap<String, String> getPreviousHeartbeatHashmap() {
+		return previousHeartbeatHashmap;
+	}
+    
+    //check leader is available
+    public boolean isLeaderElected() {
+    	if(leaderServer != null) {
+    		return true;
+    	}
+    	return false;
+    }
+    
+    //remove suspect server data
+    public static void removeSuspectServer(String suspectServerName) {
+    	//remove server from serverHashMap
+    	if(ServerState.getServerState().getServersHashmap().containsKey(suspectServerName)) {
+    		ServerState.getServerState().removeServer(suspectServerName);
+    	}
+    	
+    	//remove server from heartbeatCountList
+    	if(ServerState.getServerState().getHeartbeatCountList().containsKey(suspectServerName)) {
+    		ServerState.getServerState().removeServerInCountList(suspectServerName);
+    	}
+    	
+        //remove server from suspectList
+    	if(ServerState.getServerState().getSuspectList().containsKey(suspectServerName)) {
+    		ServerState.getServerState().removeServerInSuspectList(suspectServerName);
+    	}
+    	
+    	//remove chatrooms of suspect server
+    	Iterator<ConcurrentHashMap.Entry<String, String>> chatroomIterator = ServerState.getServerState().otherServersChatRooms.entrySet().iterator();
+		while (chatroomIterator.hasNext()) {
+		    if (chatroomIterator.next().getValue().equals(suspectServerName))
+		    	chatroomIterator.remove();
+		}
+		
+		//remove clients of suspect server
+		Iterator<ConcurrentHashMap.Entry<String, String>> userIterator = ServerState.getServerState().otherServersUsers.entrySet().iterator();
+		while (userIterator.hasNext()) {
+		    if (userIterator.next().getValue().equals(suspectServerName))
+		    	userIterator.remove();
+		}
+    }
+	
 	public void createServer2ServerConnection() {
 		for (ConcurrentHashMap.Entry<String,Server> entry : serversHashmap.entrySet()) {
 			if (!(entry.getKey().equals(this.serverName))) {
 				try {
 					Socket socket = new Socket(entry.getValue().getServerAddress(), entry.getValue().getServerPort());
+//					logger.debug("socket :: "+ socket.toString());
 					logger.info("Server "+ this.serverName + " is connected to Server "+entry.getValue().getServerName()
 							+ " using address " +entry.getValue().getServerAddress() 
 							+ " port " + entry.getValue().getServerPort());
 					JSONObject obj = new JSONObject();
-					obj.put("type","server-connection-request").put("server", this.serverName);
+					obj.put("type","server-connection-request")
+					.put("server", this.serverName)
+					.put("server-address", this.serverAddress)
+					.put("server-port", this.serverPort)
+					.put("client-port", this.clientPort)
+					.put("mainhall", "MainHall-"+this.serverName);
 					Sender.sendRespond(socket, obj);
 					Server s = entry.getValue();
 					s.setServerSocketConnection(socket);
@@ -234,11 +338,11 @@ public class ServerState {
 					s2sc.start();
 				}catch (UnknownHostException u)
 		        {
-		            logger.error(u.getMessage());
+		            logger.debug(u.getMessage());
 		        }
 		        catch(IOException i)
 		        {
-		            logger.error(i.getMessage());
+		            logger.debug(i.getMessage());
 		        }
 				
 			}
