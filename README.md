@@ -8,7 +8,7 @@ Source code for chat servers that can handle client request and server to server
 `java -jar server.jar <server_id> <path_to_conf_file>`. <br/>
 As example<br/>
 `java -jar server.jar s1 conf.txt`
-  1. In here `<server_id>` is server id, which same as in the server id in `conf.txt` file
-  2. `<path_to_conf_file>` is path to configuration file
+    1. In here `<server_id>` is server id, which same as in the server id in `conf.txt` file
+    2. `<path_to_conf_file>` is path to configuration file
 
 
