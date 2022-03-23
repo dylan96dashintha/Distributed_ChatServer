@@ -43,7 +43,8 @@ public class ClientServerConnection extends Thread {
 	        
 	    }
 	   // ss.close();  
-		}catch(Exception e){System.out.println(e);
+		}catch(Exception e){
+		//System.out.println(e);
 		logger.debug("CTRL+C");
 		clientHandler.getTypeFunctionality(getType("{\"type\": \"quitctrl\"}"));
 		
