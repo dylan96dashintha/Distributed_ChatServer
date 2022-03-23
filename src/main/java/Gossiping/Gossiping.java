@@ -33,10 +33,11 @@ public class Gossiping {
 		JSONObject msg = new JSONObject();
 		String gossipID = UUID.randomUUID().toString();
 
-		ConcurrentHashMap<String, ChatRoom> currentRooms = ServerState.getServerState().getChatRoomHashmap();
-		List<String> chatRoomNames = new ArrayList<String>();
-		for (ConcurrentHashMap.Entry<String, ChatRoom> e : currentRooms.entrySet()) {
-			chatRoomNames.add(e.getValue().getRoomName());
+		ConcurrentHashMap<String, String> currentRooms = ServerState.getServerState().getOtherServersChatRooms();
+		logger.debug("createChatRoomGossipingMsg() : "+currentRooms.toString());
+		List<JSONObject> chatRoomNames = new ArrayList<JSONObject>();
+		for (ConcurrentHashMap.Entry<String, String> e : currentRooms.entrySet()) {
+			chatRoomNames.add(new JSONObject().put("chatroom", e.getKey()).put("server", e.getValue()));
 		}
 		msg.put("type", "gossiping").put("purpus", "gossiping-chatroom").put("id", gossipID).put("sent-time", new java.util.Date())
 				.put("from", ServerState.getServerState().getServerName()).put("room-list", chatRoomNames);
@@ -51,19 +52,34 @@ public class Gossiping {
 		JSONObject msg = new JSONObject();
 		String gossipID = UUID.randomUUID().toString();
 
-		ConcurrentLinkedQueue<User> userList = ServerState.getServerState().getIdentityList();
-		
-		List<String> identityNames = new ArrayList<String>();
-		for (User user : userList) {
-			identityNames.add(user.getName());
+		ConcurrentHashMap<String, String> currentIdentities = ServerState.getServerState().getOtherServersUsers();
+		logger.debug("createNewIdentityGossipingMsg() : "+currentIdentities.toString());
+		List<JSONObject> identities = new ArrayList<JSONObject>();
+		for (ConcurrentHashMap.Entry<String, String> e : currentIdentities.entrySet()) {
+			identities.add(new JSONObject().put("identity", e.getKey()).put("server", e.getValue()));
 		}
-
 		msg.put("type", "gossiping").put("purpus", "gossiping-new-identity").put("id", gossipID).put("sent-time", new java.util.Date())
-				.put("from", ServerState.getServerState().getServerName()).put("identities", identityNames);
+				.put("from", ServerState.getServerState().getServerName()).put("identity-list", identities);
 		
 		ServerState.getServerState().addGossipingID(gossipID);
 		
 		return msg;
+//		JSONObject msg = new JSONObject();
+//		String gossipID = UUID.randomUUID().toString();
+//
+//		ConcurrentLinkedQueue<User> userList = ServerState.getServerState().getIdentityList();
+//		
+//		List<String> identityNames = new ArrayList<String>();
+//		for (User user : userList) {
+//			identityNames.add(user.getName());
+//		}
+//
+//		msg.put("type", "gossiping").put("purpus", "gossiping-new-identity").put("id", gossipID).put("sent-time", new java.util.Date())
+//				.put("from", ServerState.getServerState().getServerName()).put("identities", identityNames);
+//		
+//		ServerState.getServerState().addGossipingID(gossipID);
+//		
+//		return msg;
 	}
 
 	public JSONObject createLeaderChangedGossipingMsg() {
@@ -78,32 +94,42 @@ public class Gossiping {
 		ServerState currentServer = ServerState.getServerState();
 		ConcurrentHashMap<String, String> otherServersChatRooms = currentServer.getOtherServersChatRooms();
 		
-		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
-			logger.debug("Before " + e.getKey() + " - " + e.getValue());
-		}
+		otherServersChatRooms.clear();
 		
-		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersChatRooms.entrySet().iterator();
-		while (iterator.hasNext()) {
-		    if (iterator.next().getValue().equals(obj.getString("from")))
-		        iterator.remove();
-		}
-			
 		JSONArray chatroomArray = obj.getJSONArray("room-list");
-		
 		for (int i=0; i<chatroomArray.length(); i++) {
-			otherServersChatRooms.put(chatroomArray.getString(i), obj.getString("from"));
-		}
-		
-		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
-			logger.debug("After " + e.getKey() + " - " + e.getValue());
+			JSONObject room = (JSONObject) chatroomArray.getJSONObject(i);
+			otherServersChatRooms.put(room.getString("chatroom"), room.getString("server"));
 		}
 		
 		ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
 		
-		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersChatRooms().entrySet()) {
-			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
-		}
-		
+//		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
+//			logger.debug("Before " + e.getKey() + " - " + e.getValue());
+//		}
+//		
+//		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersChatRooms.entrySet().iterator();
+//		while (iterator.hasNext()) {
+//		    if (iterator.next().getValue().equals(obj.getString("from")))
+//		    	iterator.remove();
+//		}
+//			
+//		JSONArray chatroomArray = obj.getJSONArray("room-list");
+//		
+//		for (int i=0; i<chatroomArray.length(); i++) {
+//			otherServersChatRooms.put(chatroomArray.getString(i), obj.getString("from"));
+//		}
+//		
+//		for (ConcurrentHashMap.Entry<String, String> e: otherServersChatRooms.entrySet()) {
+//			logger.debug("After " + e.getKey() + " - " + e.getValue());
+//		}
+//		
+//		ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
+//		
+//		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersChatRooms().entrySet()) {
+//			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
+//		}
+//		
 		ServerState.getServerState().addGossipingID(obj.getString("id"));
 				
 	}
@@ -114,31 +140,45 @@ public class Gossiping {
 		ServerState currentServer = ServerState.getServerState();
 		ConcurrentHashMap<String, String> otherServersIdentities = currentServer.getOtherServersUsers();
 		
-		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
-			logger.debug("Before " + e.getKey() + " - " + e.getValue());
-		}
+		otherServersIdentities.clear();
 		
-		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersIdentities.entrySet().iterator();
-		while (iterator.hasNext()) {
-		    if (iterator.next().getValue().equals(obj.getString("from")))
-		        iterator.remove();
-		}
-			
-		JSONArray chatroomArray = obj.getJSONArray("identities");
-		
+		JSONArray chatroomArray = obj.getJSONArray("identity-list");
 		for (int i=0; i<chatroomArray.length(); i++) {
-			otherServersIdentities.put(chatroomArray.getString(i), obj.getString("from"));
-		}
-		
-		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
-			logger.debug("After " + e.getKey() + " - " + e.getValue());
+			JSONObject room = (JSONObject) chatroomArray.getJSONObject(i);
+			otherServersIdentities.put(room.getString("identity"), room.getString("server"));
 		}
 		
 		ServerState.getServerState().setOtherServersUsers(otherServersIdentities);
 		
-		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersUsers().entrySet()) {
-			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
-		}
+		
+//		ServerState currentServer = ServerState.getServerState();
+//		ConcurrentHashMap<String, String> otherServersIdentities = currentServer.getOtherServersUsers();
+//		
+//		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
+//			logger.debug("Before " + e.getKey() + " - " + e.getValue());
+//		}
+//		
+//		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersIdentities.entrySet().iterator();
+//		while (iterator.hasNext()) {
+//		    if (iterator.next().getValue().equals(obj.getString("from")))
+//		        iterator.remove();
+//		}
+//			
+//		JSONArray chatroomArray = obj.getJSONArray("identities");
+//		
+//		for (int i=0; i<chatroomArray.length(); i++) {
+//			otherServersIdentities.put(chatroomArray.getString(i), obj.getString("from"));
+//		}
+//		
+//		for (ConcurrentHashMap.Entry<String, String> e: otherServersIdentities.entrySet()) {
+//			logger.debug("After " + e.getKey() + " - " + e.getValue());
+//		}
+//		
+//		ServerState.getServerState().setOtherServersUsers(otherServersIdentities);
+//		
+//		for (ConcurrentHashMap.Entry<String, String> e: ServerState.getServerState().getOtherServersUsers().entrySet()) {
+//			logger.debug("Updated " + e.getKey() + " - " + e.getValue());
+//		}
 		
 		ServerState.getServerState().addGossipingID(obj.getString("id"));
 	}
@@ -163,6 +203,7 @@ public class Gossiping {
 	}
 
 	public ArrayList<Server> getRandomServers() {
+		int serverCount = serverCountForGossip;
 		ConcurrentHashMap<String, Server> currentServers = ServerState.getServerState().getServersHashmap();
 		String[] servers = new String[currentServers.size()];
 		int j = 0;
@@ -170,21 +211,33 @@ public class Gossiping {
 			servers[j] = s;
 			j++;
 		}
-
+		
+		if (serverCount >= servers.length) {
+			serverCount = servers.length - 1;
+		}
 		
 		String currentServerName = ServerState.getServerState().getServerName();
 		ArrayList<Server> randomServers = new ArrayList<Server>();
 		int i = 0;
-		while (i < serverCountForGossip) {
+		while (i < serverCount) {
 			String server = servers[new Random().nextInt(servers.length)];
 			if ((!(server.equals(currentServerName))) && (!(randomServers.contains(currentServers.get(server))))) {
 				i++;
 				randomServers.add(currentServers.get(server));
-				logger.debug("Random selected server: "+currentServers.get(server).getServerName());
 			}
 		}
-		logger.debug("Random Server Count: "+randomServers.size());
 		return randomServers;
 
 	}
+
+	public void sendServerBroadcast(JSONObject obj, ArrayList<Server> serverList){
+        for (Server server : serverList) {
+        	try {
+				Sender.sendRespond(server.getServerSocketConnection(), obj);
+			} catch (IOException e) {
+				logger.debug("sendServerBroadcast is failed to : "+ server.getServerName());
+				ServerState.getServerState().getSuspectList().put(server.getServerName(), "SUSPECTED");
+			}
+        }
+    }
 }
