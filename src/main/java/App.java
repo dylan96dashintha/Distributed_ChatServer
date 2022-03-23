@@ -32,9 +32,7 @@ public class App
 	private static final Logger logger = LogManager.getLogger(App.class);
 	
     public static void main( String[] args )
-    {
-    	
-
+    {  	
     	 
     	//execute with jar    	
     	String serverName = args[0];
@@ -45,7 +43,7 @@ public class App
 //    	String confFilePath = "conf.txt"; 	    	
     	
 
-    	
+//    	Read configure file
     	logger.info("Starting Server "+ serverName);
     	boolean iterate = true;
     	ArrayList<String> configuration = new ArrayList<String>();
@@ -73,6 +71,7 @@ public class App
     		}    
     	}
     	
+    	//initialize server
     	ServerState currentServer = ServerState.getServerState().initializeServer(serverName, configuration);	
 	
     	//create server connection    	
@@ -85,7 +84,7 @@ public class App
     				SocketAddress socketAddress = new InetSocketAddress(ServerState.getServerState().getServerAddress(),
     						ServerState.getServerState().getServerPort());
     				serverSocket.bind(socketAddress);
-    				logger.debug("Server " + ServerState.getServerState().getServerName()
+    				logger.info("Server " + ServerState.getServerState().getServerName()
     						+ " Listening for other servers, Address: " + ServerState.getServerState().getServerAddress()
     						+ ", Port: " + ServerState.getServerState().getServerPort());
 
@@ -136,15 +135,12 @@ public class App
 	    	startConsensusJob();
     	}
     	
+//    	listening for clients
     	while (true) {
 	       try {
                socket = serverSocket.accept();
                ClientServerConnection clientServerConnection = new ClientServerConnection(socket);
        			clientServerConnection.start();
-//       			JSONObject json = new JSONObject();
-//       			json.put("type", "newidentity");
-//       			json.put("approved", "true");
-//       			Sender.sendRespond(socket, json);
            } catch (IOException e) {
         	   isListening = false;
         	   logger.error(e.getMessage());
@@ -154,27 +150,6 @@ public class App
     	}
 
     	}
-//        try{  
-//        	ServerSocket ss=new ServerSocket(4444);  
-//        	Socket s=ss.accept();
-//        	InputStream inputFromClient = s.getInputStream();
-//            Scanner scanner = new Scanner(inputFromClient, String.valueOf(StandardCharsets.UTF_8));
-//            while (true) {
-//                String line = scanner.nextLine();
-//                System.out.println("Line == "+line);
-//                ClientHandler clientHandler = new ClientHandler(getType(line));
-//                clientHandler.getTypeFunctionality();
-//                
-//            }
-//           // ss.close();  
-//        	}catch(Exception e){System.out.println(e);}  
-//      }
-//    
-//    protected static JSONObject getType(String line) {
-//    	JSONObject jsnObj = new JSONObject(line);
-//        //String type = jsnObj.getString("type");
-//        return jsnObj;
-//    }
     
     private static void startGossipJob() {
         try {

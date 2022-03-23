@@ -24,19 +24,24 @@ public class ServerHandler {
 	private static final Logger logger = LogManager.getLogger(ServerHandler.class);
 	
 	public void newServerConnection(Socket socket, JSONObject response) throws IOException {
-		
+//		create server
 		Server server = new Server(response.getString("server"), response.getString("server-address"), response.getInt("server-port"), response.getInt("client-port"));
 		
 		server.setServerSocketConnection(socket);
 		ServerState.getServerState().replaceServerbByName(server);
 		
 		logger.info("Current server " +ServerState.getServerState().getServerName()+ " connected with server "+server.getServerName());
-		JSONObject obj = new JSONObject();
-    
+//		set main hall
+		ConcurrentHashMap<String, String> otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
+		otherServersChatRooms.put(response.getString("mainhall"), response.getString("server"));
+		ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
+		
+//		create response
+		JSONObject obj = new JSONObject();    
 		obj.put("type","server-connection-response").put("connected", true).put("server", ServerState.getServerState().getServerName()).put("leader-server",ServerState.getServerState().getLeaderServer().getServerName());
 		ArrayList<String> chatrooms = new ArrayList<String>();
 		for (ConcurrentHashMap.Entry<String, ChatRoom> e: ServerState.getServerState().getChatRoomHashmap().entrySet()) {
-			chatrooms.add(e.getKey());
+			chatrooms.add(e.getValue().getRoomName());
 		}
 		obj.put("chatrooms", chatrooms);
 		ArrayList<String> users = new ArrayList<String>();
@@ -47,12 +52,6 @@ public class ServerHandler {
 		
 		Sender.sendRespond(socket, obj);
 
-//		GossipingHandler gh = new GossipingHandler();
-//		try {
-//			gh.sendChatRoomCreateGossip();
-//		} catch (IOException e) {
-//			logger.error(e.getMessage());
-//		}
 	}
 	
 	public void newServerConnectionConfirm(JSONObject response) {
@@ -69,11 +68,21 @@ public class ServerHandler {
 				otherServersChatRooms.put(chatrooms.getString(x), server);
 			}
 			ServerState.getServerState().setOtherServersChatRooms(otherServersChatRooms);
-			//TODO- set identities
+			
+			// set identities	
+			JSONArray identities = response.getJSONArray("identity");
+			ConcurrentHashMap<String, String> otherServersIdentities = ServerState.getServerState().getOtherServersUsers();
+			for (int x=0; x<identities.length(); x++) {
+				otherServersIdentities.put(identities.getString(x), server);
+			}
+			ServerState.getServerState().setOtherServersUsers(otherServersIdentities);
+			
+			
 		    
 		}else {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connection FAILED with server "+ response.getString("server"));
 		}
+		
 	}
 	
 	public void getGlobalChatRooms(Socket socket, JSONObject response) throws IOException {
@@ -86,9 +95,9 @@ public class ServerHandler {
 			i++;
 		}
 		msg.put("chatrooms", objArry);
-		logger.info("respond "+msg.toString()+ " " + socket.getPort());
+		logger.debug("respond "+msg.toString()+ " " + socket.getPort());
 		Sender.sendRespond(socket, msg);
-		logger.info("respond sent"+msg.toString());
+		logger.debug("respond sent"+msg.toString());
 	}
 	
 	public void setGlobalChatRooms(JSONObject response) throws IOException {

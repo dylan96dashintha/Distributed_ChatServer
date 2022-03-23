@@ -39,7 +39,6 @@ public class ClientServerConnection extends Thread {
 	    while (true) {
 	    	
 	        String line = scanner.nextLine();
-	        System.out.println("Line == "+line);
 	        clientHandler.getTypeFunctionality(getType(line));
 	        
 	    }

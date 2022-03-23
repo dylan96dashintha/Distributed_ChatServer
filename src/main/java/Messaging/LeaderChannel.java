@@ -22,7 +22,8 @@ public class LeaderChannel {
 	private static final Logger logger = LogManager.getLogger(LeaderChannel.class);
 
 	public static boolean updateGlobalChatRooms() {
-		logger.info("Start communicate with Leader");
+//		update global chat rooms
+		logger.debug("Start communicate with Leader");
 		ServerState currentServer = ServerState.getServerState();
 		Server leaderServer = currentServer.getServerByName(currentServer.getLeaderServer().getServerName());
 		if (currentServer.getServerName().equals(currentServer.getLeaderServer().getServerName())) {

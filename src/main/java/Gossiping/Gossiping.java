@@ -27,7 +27,7 @@ public class Gossiping {
 
 	private static final Logger logger = LogManager.getLogger(Gossiping.class);
 
-	int serverCountForGossip = 1;
+	int serverCountForGossip = 2;
 
 	public JSONObject createChatRoomGossipingMsg() {
 		JSONObject msg = new JSONObject();
@@ -148,7 +148,7 @@ public class Gossiping {
 			otherServersIdentities.put(room.getString("identity"), room.getString("server"));
 		}
 		
-		ServerState.getServerState().setOtherServersChatRooms(otherServersIdentities);
+		ServerState.getServerState().setOtherServersUsers(otherServersIdentities);
 		
 		
 //		ServerState currentServer = ServerState.getServerState();

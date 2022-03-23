@@ -54,7 +54,7 @@ public class ClientHandler {
 
 	public void getTypeFunctionality(JSONObject jsnObj) {
 //		SUDESH - ADDED
-		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
+//		otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 //		SUDESH - REMOVED
 //		otherServersChatRooms = ServerState.getServerState().getOtherServersChatRooms();
 		this.type = jsnObj.getString("type");
@@ -62,6 +62,7 @@ public class ClientHandler {
 		switch (type) {
 
 		case "newidentity":
+			
 			identityName = jsnObj.getString("identity");
 			newIdentity = new NewIdentity(identityName, socket);
 			boolean isApproved = newIdentity.validation();
@@ -91,6 +92,7 @@ public class ClientHandler {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			break;
 
 		case "message":
@@ -243,6 +245,7 @@ public class ClientHandler {
 
 			break;
 		case "joinroom":
+			otherServersChatRooms = LeaderChannel.getGlobalChatRooms();
 			String roomIdJoinRoom = jsnObj.getString("roomid");
 			String identityJoinRoom = newIdentity.getName();
 			JSONObject joinRoomRes;

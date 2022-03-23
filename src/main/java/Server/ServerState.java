@@ -324,7 +324,12 @@ public class ServerState {
 							+ " using address " +entry.getValue().getServerAddress() 
 							+ " port " + entry.getValue().getServerPort());
 					JSONObject obj = new JSONObject();
-					obj.put("type","server-connection-request").put("server", this.serverName).put("server-address", this.serverAddress).put("server-port", this.serverPort).put("client-port", this.clientPort);
+					obj.put("type","server-connection-request")
+					.put("server", this.serverName)
+					.put("server-address", this.serverAddress)
+					.put("server-port", this.serverPort)
+					.put("client-port", this.clientPort)
+					.put("mainhall", "MainHall-"+this.serverName);
 					Sender.sendRespond(socket, obj);
 					Server s = entry.getValue();
 					s.setServerSocketConnection(socket);
