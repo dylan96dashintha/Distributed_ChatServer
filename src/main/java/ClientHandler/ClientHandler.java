@@ -465,24 +465,30 @@ public class ClientHandler {
 
 			break;
 		case "quitctrl":
-			logger.debug("case quit-ctrl");
-			String identityQuitCtrl = newIdentity.getName();
-			JSONObject roomChangeQuitCtrl;
-			boolean isUserCtrl = chatRoom.isUserOwnRoomReturnBool(identityQuitCtrl);
-			ChatRoom chatRoomQuitCtrl = chatRoom.isUserOwnRoom(identityQuitCtrl);
-			chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), newIdentity.getUserList().getUser().getRoomName());
-			if (!isUserCtrl) {
-				boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
-				//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, newIdentity.getUserList().getUser().getRoomName(), "");
-			} else {
-				//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), "");
+			try {
+				logger.debug("case quit-ctrl");
+				String identityQuitCtrl = newIdentity.getName();
+				JSONObject roomChangeQuitCtrl;
+				boolean isUserCtrl = chatRoom.isUserOwnRoomReturnBool(identityQuitCtrl);
+				ChatRoom chatRoomQuitCtrl = chatRoom.isUserOwnRoom(identityQuitCtrl);
+				chatRoom.removeUsersFromChatRoom(newIdentity.getUserList().getUser(), newIdentity.getUserList().getUser().getRoomName());
+				if (!isUserCtrl) {
+					boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+					//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, newIdentity.getUserList().getUser().getRoomName(), "");
+				} else {
+					//roomChangeQuitCtrl = changeRoom(identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), "");
 
-				boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
-				// TODO - Done
-				// Server closes the connection
-				deleteRoom(identityQuitCtrl, identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), true);
+					boolean isUserQuitCtrl = newIdentity.removeUser(newIdentity.getUserList().getUser());
+					// TODO - Done
+					// Server closes the connection
+					deleteRoom(identityQuitCtrl, identityQuitCtrl, chatRoomQuitCtrl.getRoomName(), true);
+				}
+				
+
+			} catch (Exception e) {
+				// TODO: handle exception
+				logger.debug("Exception in ctrlc");
 			}
-			
 			break;
 		}
 		
