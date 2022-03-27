@@ -1,4 +1,5 @@
 # Distributed Chat Server System
+This project contains a distributed chat system which was made for the Distributed Systems module.
 Source code for chat servers that can handle client request and server to server communication are in this repo
 
 ### Run Chat Server in local machine
