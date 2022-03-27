@@ -27,7 +27,7 @@ public class Gossiping {
 
 	private static final Logger logger = LogManager.getLogger(Gossiping.class);
 
-	int serverCountForGossip = 2;
+	int serverCountForGossip = 4;
 
 	public JSONObject createChatRoomGossipingMsg() {
 		JSONObject msg = new JSONObject();
@@ -181,6 +181,7 @@ public class Gossiping {
 //		}
 		
 		ServerState.getServerState().addGossipingID(obj.getString("id"));
+
 	}
 	
 	public void updateUsingLeaderChangedGossipingMsg(JSONObject obj) {

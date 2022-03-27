@@ -83,6 +83,8 @@ public class ServerHandler {
 			logger.info("Current server " +ServerState.getServerState().getServerName()+ " connection FAILED with server "+ response.getString("server"));
 		}
 		
+
+		
 	}
 	
 	public void getGlobalChatRooms(Socket socket, JSONObject response) throws IOException {
@@ -110,6 +112,7 @@ public class ServerHandler {
 			}
 		ServerState.getServerState().setOtherServersChatRooms(rooms);
 		ServerState.getServerState().addChatRoomRequestID(response.getString("id"));
+		
 	}
 
 	public void getGlobalIdentities(Socket socket, JSONObject response) throws IOException {
@@ -136,6 +139,7 @@ public class ServerHandler {
 			}
 		ServerState.getServerState().setOtherServersUsers(users);
 		ServerState.getServerState().addIdentityRequesID(response.getString("id"));
+		
 	}
 	
 	public void deleteChatroom(JSONObject response) {

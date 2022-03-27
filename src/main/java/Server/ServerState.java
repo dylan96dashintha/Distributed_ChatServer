@@ -163,14 +163,14 @@ public class ServerState {
 	}
 
 	public void setIdentityList(ConcurrentLinkedQueue<User> identityList) {
-		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = otherServersUsers.entrySet().iterator();
+		Iterator<ConcurrentHashMap.Entry<String, String>> iterator = this.otherServersUsers.entrySet().iterator();
 		while (iterator.hasNext()) {
 		    if (iterator.next().getValue().equals(this.serverName)) {
 		    	iterator.remove();
 		    }
 		}
 		for (User user : identityList) {
-			otherServersUsers.put(user.getName(), this.serverName);
+			this.otherServersUsers.put(user.getName(), this.serverName);
 		}
 		this.identityList = identityList;
 	}

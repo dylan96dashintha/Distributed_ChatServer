@@ -70,7 +70,7 @@ public class App
     			System.exit(0);
     		}    
     	}
-    	
+    	logger.debug("Configuration file: "+ configuration.toString());
     	//initialize server
     	ServerState currentServer = ServerState.getServerState().initializeServer(serverName, configuration);	
 	
@@ -81,7 +81,7 @@ public class App
     			Socket socket = null;
     			try {
     				serverSocket = new ServerSocket();
-    				SocketAddress socketAddress = new InetSocketAddress(ServerState.getServerState().getServerAddress(),
+    				SocketAddress socketAddress = new InetSocketAddress("0.0.0.0",
     						ServerState.getServerState().getServerPort());
     				serverSocket.bind(socketAddress);
     				logger.info("Server " + ServerState.getServerState().getServerName()
@@ -114,7 +114,7 @@ public class App
     	Socket socket = null;
     	try {
     		serverSocket = new ServerSocket();
-    		SocketAddress socketAddress = new InetSocketAddress(currentServer.getServerAddress(), currentServer.getClientPort());    		
+    		SocketAddress socketAddress = new InetSocketAddress("0.0.0.0", currentServer.getClientPort());    		
     		serverSocket.bind(socketAddress);
     		logger.debug("Server "+ currentServer.getServerName() +" Listening for Clients, Address: "+ currentServer.getServerAddress()+ ", Port: "+ currentServer.getClientPort());
     	}catch (IOException e) {
@@ -136,7 +136,7 @@ public class App
     	}
     	
 //    	listening for clients
-    	while (true) {
+    	while (isListening) {
 	       try {
                socket = serverSocket.accept();
                ClientServerConnection clientServerConnection = new ClientServerConnection(socket);
